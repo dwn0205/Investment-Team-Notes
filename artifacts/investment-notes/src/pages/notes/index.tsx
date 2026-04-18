@@ -5,7 +5,7 @@ import { CategoryBadge, SentimentBadge, RoleBadge } from "@/components/badges";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, ChevronDown, ChevronRight, FileText, CheckCircle2 } from "lucide-react";
+import { Search, ChevronDown, ChevronRight, FileText, CheckCircle2, X } from "lucide-react";
 import { ExpandedNoteView } from "@/components/expanded-note";
 
 export default function NotesPage() {
@@ -40,42 +40,9 @@ export default function NotesPage() {
 
   return (
     <div className="space-y-5 max-w-[1400px] mx-auto">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">All Notes</h1>
-          <p className="text-muted-foreground text-sm mt-1">Review your recent deal activity and thoughts.</p>
-        </div>
-
-        {/* Date range — top right */}
-        <div className="flex flex-col items-end gap-1">
-          <div className="flex items-center gap-2">
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={e => setDateFrom(e.target.value)}
-              className="h-9 px-3 rounded-md border border-border bg-white text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-            />
-            <span className="text-muted-foreground text-sm">–</span>
-            <input
-              type="date"
-              value={dateTo}
-              min={dateFrom || undefined}
-              onChange={e => setDateTo(e.target.value)}
-              className="h-9 px-3 rounded-md border border-border bg-white text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-            />
-            {(dateFrom || dateTo) && (
-              <button
-                onClick={() => { setDateFrom(""); setDateTo(""); }}
-                className="text-xs text-muted-foreground hover:text-foreground underline"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-          {dateError && (
-            <span className="text-xs text-red-500">{dateError}</span>
-          )}
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">All Notes</h1>
+        <p className="text-muted-foreground text-sm mt-1">Review your recent deal activity and thoughts.</p>
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
@@ -112,6 +79,38 @@ export default function NotesPage() {
             ))}
           </SelectContent>
         </Select>
+
+        {/* Date range — inline with other filters */}
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={e => setDateFrom(e.target.value)}
+              className="h-9 px-3 rounded-md border border-border bg-white text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+            <span className="text-muted-foreground text-sm">–</span>
+            <input
+              type="date"
+              value={dateTo}
+              min={dateFrom || undefined}
+              onChange={e => setDateTo(e.target.value)}
+              className="h-9 px-3 rounded-md border border-border bg-white text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+            {(dateFrom || dateTo) && (
+              <button
+                onClick={() => { setDateFrom(""); setDateTo(""); }}
+                className="h-9 w-9 flex items-center justify-center rounded-md border border-border bg-white text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+                title="Clear dates"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+          {dateError && (
+            <span className="text-xs text-red-500">{dateError}</span>
+          )}
+        </div>
       </div>
 
       {!isLoading && (
