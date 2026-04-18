@@ -1,6 +1,6 @@
 import { useGetWeeklyAgenda } from "@workspace/api-client-react";
 import { format } from "date-fns";
-import { CategoryBadge, SentimentBadge, RoleBadge } from "@/components/badges";
+import { SentimentBadge, RoleBadge } from "@/components/badges";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CalendarX2, Hash, LayoutList, User } from "lucide-react";
 import { ExpandedNoteView } from "@/components/expanded-note";
@@ -154,11 +154,10 @@ export default function WeeklyPage() {
                           <span className="text-sm font-medium text-foreground">
                             {format(new Date(note.noteDate), "MMM d, yyyy")}
                           </span>
-                          <CategoryBadge category={note.category} />
-                          {note.aiResult && <SentimentBadge sentiment={note.aiResult.sentiment} />}
                           {note.company && (
-                            <span className="text-xs text-muted-foreground font-medium">{note.company.name}</span>
+                            <span className="text-sm font-medium text-foreground">{note.company.name}</span>
                           )}
+                          {note.aiResult && <SentimentBadge sentiment={note.aiResult.sentiment} />}
                         </div>
                         <div className="flex flex-col items-end gap-1 shrink-0">
                           <span className="text-sm font-medium">{note.user?.fullName}</span>
