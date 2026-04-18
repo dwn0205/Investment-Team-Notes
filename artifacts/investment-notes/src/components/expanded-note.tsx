@@ -1,12 +1,13 @@
 import { NoteWithDetails } from "@workspace/api-client-react";
 import { format } from "date-fns";
-import { useGetNoteAiResult, useRerunNoteAi, useUpdateNote, getGetNoteQueryKey, getListNotesQueryKey, useGetNoteVersions } from "@workspace/api-client-react";
+import { useGetNoteAiResult, useRerunNoteAi, useUpdateNote, useDeleteNote, getGetNoteQueryKey, getListNotesQueryKey, useGetNoteVersions } from "@workspace/api-client-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useState } from "react";
 import { useActiveUser } from "@/contexts/user-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, History, RefreshCw, AlertTriangle, Check, X, Clock, User as UserIcon, CalendarCheck } from "lucide-react";
+import { Sparkles, History, RefreshCw, AlertTriangle, Check, X, Clock, User as UserIcon, CalendarCheck, Trash2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useQueryClient } from "@tanstack/react-query";
@@ -25,6 +26,7 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
   const { activeUser } = useActiveUser();
   const queryClient = useQueryClient();
   const updateNote = useUpdateNote();
+  const deleteNote = useDeleteNote();
   const rerunAi = useRerunNoteAi();
   
   const { data: aiResult, isLoading: aiLoading } = useGetNoteAiResult(note.id, {
@@ -55,6 +57,17 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
         toast.success("AI analysis scheduled");
         queryClient.invalidateQueries({ queryKey: [`/api/notes/${note.id}/ai`] });
       }
+    });
+  };
+
+  const handleDelete = () => {
+    deleteNote.mutate({ id: note.id }, {
+      onSuccess: () => {
+        toast.success("Note deleted");
+        queryClient.invalidateQueries({ queryKey: getListNotesQueryKey() });
+        onCollapse();
+      },
+      onError: () => toast.error("Failed to delete note")
     });
   };
 
@@ -109,6 +122,30 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
             )}
           </div>
           <div className="flex items-center gap-2">
+            {!isEditing && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10" disabled={deleteNote.isPending}>
+                    <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                    Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete this note?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. The note and its version history will be permanently removed.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
             {!isEditing ? (
               <Button variant="secondary" size="sm" onClick={() => setIsEditing(true)}>Edit Note</Button>
             ) : (
