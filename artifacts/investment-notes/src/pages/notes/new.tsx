@@ -65,6 +65,13 @@ export default function NewNotePage() {
   const category = form.watch("category");
   const isGeneric = category === "generic";
   const isPortfolio = category === "portfolio";
+  const isPipeline = category === "pipeline";
+
+  // Filter companies by category type
+  const filteredCompanies = companies?.filter(c => {
+    if (isGeneric) return true;
+    return c.type === category;
+  });
 
   // Keep author in sync with the active user switcher
   useEffect(() => {
@@ -73,11 +80,15 @@ export default function NewNotePage() {
     }
   }, [activeUser, form]);
 
+  // Reset company + stage when category changes
   useEffect(() => {
+    form.setValue("companyId", null);
     if (isPortfolio) {
       form.setValue("stageAtTimeOfNote", "closed" as any, { shouldValidate: true });
+    } else {
+      form.setValue("stageAtTimeOfNote", null);
     }
-  }, [isPortfolio, form]);
+  }, [category]);
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     createNote.mutate({
@@ -210,7 +221,7 @@ export default function NewNotePage() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {companies?.map(c => (
+                      {filteredCompanies?.map(c => (
                         <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                       ))}
                     </SelectContent>
@@ -227,7 +238,7 @@ export default function NewNotePage() {
                 <FormItem>
                   <FormLabel>
                     Deal Stage{" "}
-                    {isGeneric && <span className="text-muted-foreground font-normal">(Optional)</span>}
+                    {isGeneric && <span className="text-muted-foreground font-normal">(Not applicable)</span>}
                     {isPortfolio && <span className="text-muted-foreground font-normal ml-1">— locked to Closed</span>}
                   </FormLabel>
                   <Select
@@ -237,13 +248,13 @@ export default function NewNotePage() {
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder={isGeneric ? "Not applicable" : "Select stage"} />
+                        <SelectValue placeholder={isGeneric ? "Not applicable" : isPortfolio ? "Closed" : "Select stage"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {!isPortfolio && <SelectItem value="initial">Initial</SelectItem>}
-                      {!isPortfolio && <SelectItem value="final">Final</SelectItem>}
-                      <SelectItem value="closed">Closed</SelectItem>
+                      {isPipeline && <SelectItem value="initial">Initial</SelectItem>}
+                      {isPipeline && <SelectItem value="final">Final</SelectItem>}
+                      {isPortfolio && <SelectItem value="closed">Closed</SelectItem>}
                     </SelectContent>
                   </Select>
                   <FormMessage />
