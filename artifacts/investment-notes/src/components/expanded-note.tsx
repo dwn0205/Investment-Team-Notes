@@ -130,7 +130,7 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
             )}
           </div>
           <div className="flex items-center gap-2">
-            {!isEditing && (
+            {!isEditing && activeUser?.id === note.userId && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10" disabled={deleteNote.isPending}>
