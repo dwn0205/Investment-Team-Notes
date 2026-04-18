@@ -42,8 +42,8 @@ export default function NotesPage() {
     <div className="space-y-5 max-w-[1400px] mx-auto">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">All Notes</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">Review your recent deal activity and thoughts.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">All Notes</h1>
+          <p className="text-muted-foreground text-sm mt-1">Review your recent deal activity and thoughts.</p>
         </div>
 
         {/* Date range — top right */}
