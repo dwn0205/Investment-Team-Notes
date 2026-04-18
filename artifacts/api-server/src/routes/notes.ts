@@ -183,9 +183,8 @@ router.put("/:id", async (req, res) => {
 
     await db.update(notes).set(updateFields).where(eq(notes.id, req.params.id));
 
-    if (contentChanged && content) {
-      processNoteAi(req.params.id, content).catch(() => {});
-    }
+    const contentToAnalyse = content ?? existing.content;
+    processNoteAi(req.params.id, contentToAnalyse).catch(() => {});
 
     const updated = await getNoteWithDetails(req.params.id);
     res.json(formatNote(updated));
