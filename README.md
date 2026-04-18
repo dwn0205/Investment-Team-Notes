@@ -116,7 +116,42 @@ AI processing is always non-blocking: if it fails, the note is still saved and t
 
 ---
 
-## 7. Data Model
+## 7. User Behavior & Permissions
+
+The app has three user roles, each with different levels of access. The active user is selected from a switcher in the sidebar — this simulates different team members using the tool.
+
+### Roles
+
+| Role | Description |
+|---|---|
+| **Associate** | Junior team member. Logs notes and views all data. |
+| **Principal** | Mid-level. Same note access as associate. |
+| **Director** | Senior. Has exclusive control over the weekly agenda. |
+
+### Permission Rules
+
+**Editing notes**
+Any user can edit any note, regardless of who originally wrote it. This reflects how a PE team collaborates — a director might refine an associate's note after a follow-up call. When a content edit is made, the system records who made the edit and creates a version snapshot.
+
+**Deleting notes**
+A user can only soft-delete their own notes. The delete button is hidden on notes written by someone else. Deletion is always soft — the record remains in the database with `is_deleted = true` and is simply excluded from all views.
+
+**Weekly agenda**
+Only directors can add or remove a note from the weekly agenda (the `include_in_weekly` flag). The checkbox to toggle this is hidden for associates and principals. This ensures the agenda is curated by senior staff, not cluttered by every note logged during the week.
+
+### Current Implementation Status
+
+| Rule | UI enforced | API enforced |
+|---|---|---|
+| Any user can edit any note | Yes | Yes |
+| Users can only delete their own notes | Yes | No — API has no ownership check |
+| Only directors can toggle weekly agenda | Yes | No — API has no role check |
+
+The two gaps mean the rules rely on the frontend being the only entry point. If the API were ever called directly (e.g. by an integration or script), those restrictions would not apply.
+
+---
+
+## 8. Data Model
 
 The database has six tables. Here is each one, what it stores, and why it was designed that way.
 
@@ -245,7 +280,7 @@ companies ──< quarterly_summaries
 
 ---
 
-## 8. Key Commands
+## 9. Key Commands
 
 | Command | What it does |
 |---|---|
