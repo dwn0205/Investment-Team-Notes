@@ -7,7 +7,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background dark">
+      <div className="min-h-screen flex w-full bg-background">
         <Sidebar className="border-r border-border bg-sidebar">
           <SidebarHeader className="p-4">
             <h1 className="text-lg font-bold tracking-tight text-sidebar-foreground">

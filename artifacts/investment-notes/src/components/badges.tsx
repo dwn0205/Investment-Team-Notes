@@ -1,38 +1,80 @@
 import { Badge } from "@/components/ui/badge";
 
-export function CategoryBadge({ category }: { category: string }) {
+export function CategoryBadge({ category, includeInWeekly }: { category: string; includeInWeekly?: boolean }) {
   if (category === "pipeline") {
-    return <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20 rounded-sm hover:bg-blue-500/20">Pipeline</Badge>;
+    return (
+      <Badge className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100 rounded font-medium text-xs px-2 py-0.5">
+        Pipeline
+      </Badge>
+    );
   }
   if (category === "portfolio") {
-    return <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20 rounded-sm hover:bg-green-500/20">Portfolio</Badge>;
+    return (
+      <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100 rounded font-medium text-xs px-2 py-0.5">
+        Portfolio
+      </Badge>
+    );
   }
-  return <Badge variant="outline" className="bg-gray-500/10 text-gray-400 border-gray-500/20 rounded-sm hover:bg-gray-500/20">Generic</Badge>;
+  if (includeInWeekly) {
+    return (
+      <Badge className="bg-sky-100 text-sky-700 border-sky-200 hover:bg-sky-100 rounded font-medium text-xs px-2 py-0.5">
+        Weekly
+      </Badge>
+    );
+  }
+  return (
+    <Badge className="bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-100 rounded font-medium text-xs px-2 py-0.5">
+      Generic
+    </Badge>
+  );
 }
 
 export function SentimentBadge({ sentiment }: { sentiment: string }) {
   if (sentiment === "positive") {
-    return <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20 rounded-sm hover:bg-green-500/20">Positive</Badge>;
+    return (
+      <span className="inline-flex items-center gap-1 text-green-600 font-medium text-sm whitespace-nowrap">
+        <span>↑</span> Positive
+      </span>
+    );
   }
   if (sentiment === "negative") {
-    return <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/20 rounded-sm hover:bg-red-500/20">Negative</Badge>;
+    return (
+      <span className="inline-flex items-center gap-1 text-red-500 font-medium text-sm whitespace-nowrap">
+        <span>↓</span> Negative
+      </span>
+    );
   }
-  return <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 rounded-sm hover:bg-amber-500/20">Neutral</Badge>;
+  return (
+    <span className="inline-flex items-center gap-1 text-amber-600 font-medium text-sm whitespace-nowrap">
+      <span>→</span> Neutral
+    </span>
+  );
 }
 
 export function RoleBadge({ role }: { role: string }) {
   if (role === "director") {
-    return <Badge variant="outline" className="bg-purple-500/10 text-purple-500 border-purple-500/20 rounded-sm hover:bg-purple-500/20 capitalize">{role}</Badge>;
+    return (
+      <span className="inline-block text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 border border-orange-200">
+        {role}
+      </span>
+    );
   }
   if (role === "principal") {
-    return <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20 rounded-sm hover:bg-blue-500/20 capitalize">{role}</Badge>;
+    return (
+      <span className="inline-block text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 border border-blue-200">
+        {role}
+      </span>
+    );
   }
-  return <Badge variant="outline" className="bg-gray-500/10 text-gray-400 border-gray-500/20 rounded-sm hover:bg-gray-500/20 capitalize">{role}</Badge>;
+  return (
+    <span className="inline-block text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">
+      {role}
+    </span>
+  );
 }
 
 export function CompanyTypeBadge({ type }: { type: string }) {
-  if (type === "pipeline") {
-    return <span className="text-xs font-medium px-1.5 py-0.5 rounded text-blue-400 bg-blue-500/10 uppercase tracking-wider">{type}</span>;
-  }
-  return <span className="text-xs font-medium px-1.5 py-0.5 rounded text-green-400 bg-green-500/10 uppercase tracking-wider">{type}</span>;
+  return (
+    <span className="text-xs text-muted-foreground">({type})</span>
+  );
 }
