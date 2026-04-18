@@ -151,7 +151,94 @@ The two gaps mean the rules rely on the frontend being the only entry point. If 
 
 ---
 
-## 8. Data Model
+## 8. How the App is Expected to be Used
+
+This section describes the intended day-to-day workflow for a private equity team using the app.
+
+---
+
+### Selecting Who You Are
+
+When the app loads, a user switcher is shown in the bottom-left corner of the sidebar. Team members select their own name before interacting with the app. This determines what actions are available to them (e.g. the weekly agenda toggle only appears for directors).
+
+---
+
+### Logging a Note
+
+Any team member can log a note at any time via the **+ New Note** button.
+
+1. Select the **category** — Generic (market observation), Pipeline (a company being evaluated), or Portfolio (an invested company).
+2. If Pipeline or Portfolio, select the **company**.
+3. Set the **note date** — the date the observation or meeting occurred, which may differ from today.
+4. Write the **note content** — call summaries, meeting takeaways, market observations, red flags, etc.
+5. Submit. The note is saved immediately. AI analysis (sentiment, risks, themes) runs in the background and appears shortly after.
+
+---
+
+### Reviewing and Editing Notes
+
+The **All Notes** page shows the full note history with filters for category, company, date range, and author.
+
+- Click any note to expand it inline and see the full content, AI analysis, and version history.
+- Any team member can **edit** any note — useful when a director wants to refine a junior analyst's write-up after a follow-up conversation.
+- Editing the content creates a version snapshot so the original text is never lost.
+- A team member can **delete** only their own notes.
+
+---
+
+### Building the Weekly Agenda
+
+Throughout the week, associates and principals log notes as they happen. At the end of the week (or before the Monday meeting), a **director** reviews the notes and flags the most relevant ones for the agenda.
+
+- Open any note and enter edit mode.
+- The **Include in Weekly Agenda** checkbox appears (directors only).
+- Check it to add the note to the agenda. Uncheck to remove it.
+
+The **Weekly Agenda** page then shows only flagged notes, grouped and enriched with:
+- A sentiment breakdown across all agenda notes
+- A Key Risks panel pulled from AI analysis
+- A "Needs Attention" filter to surface only negative notes
+
+---
+
+### Running the Weekly Meeting
+
+On the day of the meeting, the team opens the **Weekly Agenda** page. It gives a structured view of:
+- How many notes were flagged, and the overall sentiment split
+- The most significant risks extracted across all notes
+- Each individual note, expandable inline
+
+The director can use the "Needs Attention" toggle to focus the conversation on concerning items first.
+
+---
+
+### Generating a Quarterly Summary
+
+At the end of each quarter, the team uses the **Quarterly Summaries** page to synthesise everything written about a portfolio company over that period.
+
+1. Select the **portfolio company**, **year**, and **quarter**.
+2. Click **Generate Summary**. The AI reads all relevant notes (both company-specific and general market notes from that quarter) and produces:
+   - A performance direction (improving / stable / deteriorating) based on sentiment ratios
+   - An executive summary in bullet points
+   - Key risks and recurring themes
+3. The summary is saved and can be **regenerated** at any time if new notes have been added.
+
+The underlying notes used to generate the summary are shown below it, split into Company Notes and Market / Generic Notes, both collapsible.
+
+---
+
+### Typical Weekly Rhythm
+
+| When | Who | Action |
+|---|---|---|
+| Throughout the week | Associates / Principals | Log notes after calls, meetings, and research |
+| End of week | Director | Review notes, flag relevant ones for the weekly agenda |
+| Monday meeting | Full team | Review Weekly Agenda page together |
+| End of quarter | Director | Generate quarterly summary per portfolio company |
+
+---
+
+## 9. Data Model
 
 The database has six tables. Here is each one, what it stores, and why it was designed that way.
 
@@ -280,7 +367,7 @@ companies ──< quarterly_summaries
 
 ---
 
-## 9. Key Commands
+## 10. Key Commands
 
 | Command | What it does |
 |---|---|
