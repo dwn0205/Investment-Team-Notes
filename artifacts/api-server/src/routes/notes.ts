@@ -162,11 +162,11 @@ router.put("/:id", async (req, res) => {
     const contentChanged = content !== undefined && content !== existing.content;
 
     if (contentChanged) {
-      // Save version before updating — attribute to the editor if provided, else the note's original author
+      // Version snapshot records who held the note BEFORE this edit
       await db.insert(noteVersions).values({
         noteId: existing.id,
         contentSnapshot: existing.content,
-        userId: editedByUserId ?? existing.userId,
+        userId: existing.userId,
         editReason: editReason ?? null,
       });
     }
@@ -175,7 +175,11 @@ router.put("/:id", async (req, res) => {
     if (content !== undefined) updateFields.content = content;
     if (stageAtTimeOfNote !== undefined) updateFields.stageAtTimeOfNote = stageAtTimeOfNote ?? null;
     if (includeInWeekly !== undefined) updateFields.includeInWeekly = includeInWeekly;
-    if (contentChanged) updateFields.versionCount = (existing.versionCount ?? 1) + 1;
+    if (contentChanged) {
+      updateFields.versionCount = (existing.versionCount ?? 1) + 1;
+      // Update the note's user to whoever made this edit
+      if (editedByUserId) updateFields.userId = editedByUserId;
+    }
 
     await db.update(notes).set(updateFields).where(eq(notes.id, req.params.id));
 
