@@ -372,7 +372,87 @@ companies ──< quarterly_summaries
 
 ---
 
-## 10. Key Commands
+## 10. Trade-offs & How to Productionize
+
+This section documents the deliberate trade-offs made given time constraints, and how each would be addressed in a production system.
+
+---
+
+### Authentication & Identity
+
+**What was built:** A user switcher in the sidebar lets you select who you are acting as. The active user's ID is stored in localStorage and sent with requests from the frontend.
+
+**The trade-off:** There is no real authentication. Anyone can impersonate any user by switching the selector. This was acceptable for a prototype where the focus was on the data model and features, not the auth layer.
+
+**How to productionize:** Replace the switcher with a proper identity provider (e.g. Clerk, Auth0, or an internal SSO via SAML/OIDC). The `userId` must come from a verified server-side session, never from the client. All API routes that currently accept `userId` in the request body would derive it from the session instead.
+
+---
+
+### API-Level Permission Enforcement
+
+**What was built:** Two permission rules — users can only delete their own notes, and only directors can toggle the weekly agenda — are enforced in the UI only. The API itself has no ownership or role checks.
+
+**The trade-off:** Frontend enforcement is sufficient when the API is not exposed directly. For a prototype accessed only through the app, this is acceptable. The rules are documented as known gaps.
+
+**How to productionize:** Add Express middleware that reads the authenticated user's role and ID from the session, then validates each relevant route. For example, `DELETE /api/notes/:id` would check `session.userId === note.userId` before proceeding. The `includeInWeekly` field on `PUT /api/notes/:id` would reject requests from non-directors.
+
+---
+
+### AI Processing
+
+**What was built:** AI analysis is triggered after every note save using fire-and-forget — the API kicks off the OpenAI call and does not wait for it to complete. If it fails, nothing happens (silent failure).
+
+**The trade-off:** This keeps the user experience fast and decoupled from AI latency. The downside is there is no retry logic, no visibility into failures, and no queue management.
+
+**How to productionize:** Move AI processing into a proper background job queue (e.g. BullMQ with Redis, or AWS SQS). Each note save enqueues a job. The queue handles retries with exponential backoff, dead-letter queues for persistent failures, and a dashboard for monitoring job status. Failed jobs would be logged and alertable.
+
+---
+
+### Database Migrations
+
+**What was built:** Schema changes are applied using `drizzle-kit push`, which directly syncs the schema to the database without generating migration files. Fast for development, but destructive in production.
+
+**The trade-off:** `push` is convenient when iterating quickly on a schema. It has no migration history, no rollback capability, and can cause data loss if a column is dropped or renamed.
+
+**How to productionize:** Switch to `drizzle-kit generate` to produce versioned SQL migration files committed to the repository. Migrations run as part of the deployment pipeline, with a rollback strategy for each one. No schema change goes to production without a reviewed migration file.
+
+---
+
+### Quarterly Summary Invalidation
+
+**What was built:** A quarterly summary is generated on demand and cached. There is no automatic invalidation when new notes are added after a summary has been generated.
+
+**The trade-off:** Manual regeneration is simple and predictable. The risk is a stale summary being presented without the user noticing.
+
+**How to productionize:** Add a staleness indicator — compare the summary's `generated_at` timestamp against the `updated_at` of the most recent note in that quarter. If newer notes exist, show a banner: *"New notes have been added since this summary was generated. Regenerate?"* Optionally, trigger automatic regeneration on a schedule (e.g. weekly via a cron job).
+
+---
+
+### Data Export
+
+**What was not built:** There is no export functionality for notes or summaries.
+
+**How to extend:** Excel export is straightforward — add the `xlsx` library to the frontend and convert the already-loaded data into a downloadable `.xlsx` file. No backend changes needed. PDF export could be handled via browser print-to-PDF with print-specific CSS (low effort), or a proper PDF layout using `@react-pdf/renderer` for a more polished result.
+
+---
+
+### Slowly Changing Dimensions on Companies
+
+**What was not built:** The `companies` table has no history of attribute changes. If a company moves from `pipeline` to `portfolio`, older notes will retroactively appear to have been written about a portfolio company, even if they were written during the pipeline phase.
+
+**How to extend:** Implement SCD Type 2 — add `valid_from`, `valid_to`, and `is_current` columns to the companies table. Notes would reference a specific company snapshot rather than the current record. Queries would join on the effective date rather than just the company ID. This adds significant complexity and was intentionally deferred as overkill for this tool's current scope.
+
+---
+
+### Observability
+
+**What was not built:** There is basic structured logging (via pino) on the API server, but no error tracking, no alerting, and no cost monitoring on AI calls.
+
+**How to productionize:** Add Sentry for error tracking and alerting. Add OpenTelemetry for distributed tracing across the API and AI calls. Track OpenAI token usage per request and set budget alerts. Log AI latency percentiles to surface slow or degraded responses.
+
+---
+
+## 11. Key Commands
 
 | Command | What it does |
 |---|---|
