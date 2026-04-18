@@ -247,6 +247,27 @@ router.get("/:id/ai-result", async (req, res) => {
   }
 });
 
+router.post("/backfill-ai", async (req, res) => {
+  try {
+    const allNotes = await db.query.notes.findMany({
+      where: eq(notes.isDeleted, false),
+      with: { aiResult: true },
+    });
+
+    const missing = allNotes.filter(n => !n.aiResult);
+
+    // Fire and forget — process each note that has no AI result yet
+    for (const note of missing) {
+      processNoteAi(note.id, note.content).catch(() => {});
+    }
+
+    res.status(202).json({ queued: missing.length, message: `AI generation started for ${missing.length} notes` });
+  } catch (err) {
+    req.log.error({ err }, "Failed to backfill AI");
+    res.status(500).json({ error: "Failed to backfill AI" });
+  }
+});
+
 router.post("/:id/rerun-ai", async (req, res) => {
   try {
     const note = await db.query.notes.findFirst({
