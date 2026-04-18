@@ -96,7 +96,7 @@ export default function QuarterlyPage() {
   const selectedCompany = portfolioCompanies.find((c) => c.id === companyId);
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 pb-12">
+    <div className="max-w-[1400px] mx-auto space-y-6 pb-12">
       {/* Header */}
       <div className="border-b border-border pb-6">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Quarterly Portfolio View</h1>
