@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 
-export function CategoryBadge({ category, includeInWeekly }: { category: string; includeInWeekly?: boolean }) {
+export function CategoryBadge({ category }: { category: string }) {
   if (category === "pipeline") {
     return (
       <Badge className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100 rounded font-medium text-xs px-2 py-0.5">
@@ -12,13 +12,6 @@ export function CategoryBadge({ category, includeInWeekly }: { category: string;
     return (
       <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100 rounded font-medium text-xs px-2 py-0.5">
         Portfolio
-      </Badge>
-    );
-  }
-  if (includeInWeekly) {
-    return (
-      <Badge className="bg-sky-100 text-sky-700 border-sky-200 hover:bg-sky-100 rounded font-medium text-xs px-2 py-0.5">
-        Weekly
       </Badge>
     );
   }

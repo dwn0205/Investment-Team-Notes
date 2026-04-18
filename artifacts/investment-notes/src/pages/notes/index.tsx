@@ -121,7 +121,7 @@ export default function NotesPage() {
                   </div>
 
                   <div>
-                    <CategoryBadge category={note.category} includeInWeekly={note.includeInWeekly} />
+                    <CategoryBadge category={note.category} />
                   </div>
 
                   <div>
