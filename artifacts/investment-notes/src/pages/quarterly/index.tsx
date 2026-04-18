@@ -293,68 +293,99 @@ export default function QuarterlyPage() {
             </div>
           )}
 
-          {/* Notes Table */}
-          {quarterlyView.notes.length > 0 && (
-            <div className="border border-card-border rounded-lg bg-card overflow-hidden">
-              <button
-                className="w-full flex items-center justify-between px-5 py-3.5 text-sm font-semibold text-foreground hover:bg-muted/40 transition-colors border-b border-card-border"
-                onClick={() => setNotesOpen((v) => !v)}
-              >
-                <span className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                  Underlying Notes ({quarterlyView.notes.length})
-                </span>
-                {notesOpen
-                  ? <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  : <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                }
-              </button>
+          {/* Notes Table — grouped by category */}
+          {quarterlyView.notes.length > 0 && (() => {
+            const sorted = [...quarterlyView.notes].sort(
+              (a, b) => new Date(a.noteDate).getTime() - new Date(b.noteDate).getTime()
+            );
+            const companyNotes = sorted.filter((n) => n.companyId);
+            const genericNotes = sorted.filter((n) => !n.companyId);
 
-              {notesOpen && (
-                <div className="divide-y divide-border">
-                  {[...quarterlyView.notes]
-                    .sort((a, b) => new Date(a.noteDate).getTime() - new Date(b.noteDate).getTime())
-                    .map((note) => (
-                      <div key={note.id} className="flex flex-col">
-                        <div
-                          className={`px-5 py-4 hover:bg-muted/40 cursor-pointer transition-colors ${expandedNoteId === note.id ? "bg-muted/40" : ""}`}
-                          onClick={() => setExpandedNoteId(expandedNoteId === note.id ? null : note.id)}
-                        >
-                          <div className="flex items-center justify-between gap-4 mb-1.5">
-                            <div className="flex items-center gap-3 flex-wrap">
-                              <span className="text-xs font-medium text-foreground">
-                                {format(new Date(note.noteDate), "MMM d, yyyy")}
-                              </span>
-                              {note.aiResult && <SentimentBadge sentiment={note.aiResult.sentiment} />}
-                              {note.category === "generic" && !note.companyId && (
-                                <span className="text-[10px] font-medium uppercase tracking-wide px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border">
-                                  Market
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                              <span className="text-xs text-muted-foreground">{note.user?.fullName}</span>
-                              {note.user?.role && <RoleBadge role={note.user.role} />}
-                              {expandedNoteId === note.id
-                                ? <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                                : <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                              }
-                            </div>
-                          </div>
-                          <p className="text-sm text-muted-foreground line-clamp-2">{note.content}</p>
-                        </div>
-
-                        {expandedNoteId === note.id && (
-                          <div className="h-[420px] border-t border-card-border bg-background">
-                            <ExpandedNoteView note={note} onCollapse={() => setExpandedNoteId(null)} />
-                          </div>
-                        )}
-                      </div>
-                    ))}
+            const NoteRow = ({ note }: { note: typeof sorted[0] }) => (
+              <div className="flex flex-col">
+                <div
+                  className={`px-5 py-4 hover:bg-muted/40 cursor-pointer transition-colors ${expandedNoteId === note.id ? "bg-muted/40" : ""}`}
+                  onClick={() => setExpandedNoteId(expandedNoteId === note.id ? null : note.id)}
+                >
+                  <div className="flex items-center justify-between gap-4 mb-1.5">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="text-xs font-medium text-foreground">
+                        {format(new Date(note.noteDate), "MMM d, yyyy")}
+                      </span>
+                      {note.aiResult && <SentimentBadge sentiment={note.aiResult.sentiment} />}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs text-muted-foreground">{note.user?.fullName}</span>
+                      {note.user?.role && <RoleBadge role={note.user.role} />}
+                      {expandedNoteId === note.id
+                        ? <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        : <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      }
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{note.content}</p>
                 </div>
-              )}
-            </div>
-          )}
+                {expandedNoteId === note.id && (
+                  <div className="h-[420px] border-t border-card-border bg-background">
+                    <ExpandedNoteView note={note} onCollapse={() => setExpandedNoteId(null)} />
+                  </div>
+                )}
+              </div>
+            );
+
+            return (
+              <div className="border border-card-border rounded-lg bg-card overflow-hidden">
+                {/* Header */}
+                <button
+                  className="w-full flex items-center justify-between px-5 py-3.5 text-sm font-semibold text-foreground hover:bg-muted/40 transition-colors border-b border-card-border"
+                  onClick={() => setNotesOpen((v) => !v)}
+                >
+                  <span className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    Underlying Notes ({quarterlyView.notes.length})
+                  </span>
+                  {notesOpen
+                    ? <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    : <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  }
+                </button>
+
+                {notesOpen && (
+                  <div>
+                    {/* Company notes */}
+                    {companyNotes.length > 0 && (
+                      <div>
+                        <div className="px-5 py-2.5 bg-muted/30 border-b border-card-border flex items-center gap-2">
+                          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            Company Notes
+                          </span>
+                          <span className="text-xs text-muted-foreground">({companyNotes.length})</span>
+                        </div>
+                        <div className="divide-y divide-border">
+                          {companyNotes.map((note) => <NoteRow key={note.id} note={note} />)}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Generic / Market notes */}
+                    {genericNotes.length > 0 && (
+                      <div className={companyNotes.length > 0 ? "border-t border-card-border" : ""}>
+                        <div className="px-5 py-2.5 bg-muted/30 border-b border-card-border flex items-center gap-2">
+                          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            Market / Generic Notes
+                          </span>
+                          <span className="text-xs text-muted-foreground">({genericNotes.length})</span>
+                        </div>
+                        <div className="divide-y divide-border">
+                          {genericNotes.map((note) => <NoteRow key={note.id} note={note} />)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>
