@@ -82,7 +82,7 @@ export default function NotesPage() {
         <div className="relative w-72">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search companies, authors or content..."
+            placeholder="Search companies, users or content..."
             className="pl-9 bg-white border-border shadow-none h-9 text-sm"
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -124,7 +124,7 @@ export default function NotesPage() {
           <div>Category</div>
           <div>Sentiment</div>
           <div>Company</div>
-          <div>Author</div>
+          <div>User</div>
           <div>Agenda</div>
           <div>Content</div>
           <div />
