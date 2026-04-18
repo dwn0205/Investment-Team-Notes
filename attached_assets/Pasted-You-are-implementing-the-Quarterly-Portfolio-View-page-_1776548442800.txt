@@ -1,0 +1,265 @@
+You are implementing the "Quarterly Portfolio View" page for an existing application called:
+
+"Investment Team Notes App"
+
+This page is designed for investment professionals to review portfolio company performance for a given quarter.
+
+Focus on clarity, structured insights, and correctness. Do NOT overcomplicate UI.
+
+------------------------------------------------------------
+1. PURPOSE
+
+The Quarterly View helps users:
+
+• Understand what happened during the quarter
+• Identify key risks and developments
+• Assess overall performance direction
+• Quickly review supporting notes
+
+This is NOT a raw data page — it is a synthesized, insight-driven view.
+
+------------------------------------------------------------
+2. USER FLOW
+
+1. User selects:
+   - Company (portfolio only)
+   - Year
+   - Quarter (Q1–Q4)
+
+2. System:
+   - Loads existing summary (if exists)
+
+3. If no summary:
+   - User clicks "Generate Summary"
+
+4. After generation:
+   - Summary is stored and reused
+   - Display insights + underlying notes
+
+------------------------------------------------------------
+3. API DESIGN
+
+ENDPOINT 1: GET /api/quarterly-summary
+
+Query params:
+- companyId
+- year
+- quarter
+
+Response:
+
+{
+  "summary": {
+    "exists": true,
+    "summaryText": "...",
+    "overallSentiment": "positive | neutral | negative",
+    "performanceDirection": "improving | stable | deteriorating",
+    "keyThemes": ["..."],
+    "risks": ["..."]
+  },
+  "notes": [
+    {
+      "noteId": "...",
+      "date": "2026-02-10",
+      "content": "...",
+      "sentiment": "positive"
+    }
+  ]
+}
+
+------------------------------------------------------------
+
+ENDPOINT 2: POST /api/quarterly-summary/generate
+
+Body:
+{
+  "companyId": "...",
+  "year": 2026,
+  "quarter": 1
+}
+
+Behavior:
+1. Fetch all notes:
+   - companyId match
+   - noteDate within quarter
+   - isDeleted = false
+
+2. Join note_ai_results
+
+3. Send to OpenAI:
+   - include notes + extracted risks/themes
+
+4. Expect structured output:
+
+{
+  "summaryText": "...",
+  "overallSentiment": "...",
+  "performanceDirection": "...",
+  "keyThemes": [...],
+  "risks": [...]
+}
+
+5. Store in QuarterlySummary:
+   - overwrite if exists
+
+6. Return result
+
+------------------------------------------------------------
+4. AI PROMPT (IMPORTANT)
+
+Use this prompt when generating summary:
+
+"Analyze the following investment notes for a portfolio company over a quarter.
+
+Return a structured JSON with:
+- summaryText: 3–5 bullet executive summary
+- overallSentiment: positive, neutral, or negative
+- performanceDirection: improving, stable, or deteriorating
+- keyThemes: top recurring themes
+- risks: key risks or concerns
+
+Focus on changes, risks, and major developments.
+
+Notes:
+[INSERT NOTES HERE]"
+
+------------------------------------------------------------
+5. UI STRUCTURE
+
+QuarterlyPage
+ ├── Controls (Company + Year + Quarter)
+ ├── SummarySection
+ ├── PerformanceSection
+ ├── RisksSection
+ ├── ThemesSection
+ └── NotesTable (collapsible)
+
+------------------------------------------------------------
+6. COMPONENT DETAILS
+
+------------------------------------------------------------
+
+A. Controls
+
+- Dropdown: Company (portfolio only)
+- Dropdown: Year
+- Dropdown: Quarter
+
+- Button:
+  "Generate Summary"
+
+------------------------------------------------------------
+
+B. SummarySection
+
+Display:
+- summaryText (bullet format)
+
+------------------------------------------------------------
+
+C. PerformanceSection
+
+Display:
+- "Performance: Improving / Stable / Deteriorating"
+
+Use color:
+- green → improving
+- gray → stable
+- red → deteriorating
+
+------------------------------------------------------------
+
+D. RisksSection
+
+Display:
+- List of risks (max 5)
+
+------------------------------------------------------------
+
+E. ThemesSection
+
+Display:
+- List of themes
+
+------------------------------------------------------------
+
+F. NotesTable (Collapsible)
+
+Columns:
+- Date
+- Content
+- Sentiment badge
+
+Sorting:
+- ORDER BY noteDate ASC
+
+------------------------------------------------------------
+7. BUSINESS LOGIC
+
+------------------------------------------------------------
+
+Performance Direction Mapping:
+- Mostly positive → improving
+- Mixed → stable
+- Mostly negative → deteriorating
+
+------------------------------------------------------------
+
+Quarter Definition:
+- Q1: Jan–Mar
+- Q2: Apr–Jun
+- Q3: Jul–Sep
+- Q4: Oct–Dec
+
+------------------------------------------------------------
+
+Summary Behavior:
+- Only ONE summary per (companyId, year, quarter)
+- Overwrite on regenerate
+
+------------------------------------------------------------
+8. UI REQUIREMENTS
+
+- Clean, minimal layout
+- Text-first (no charts)
+- Use badges for sentiment:
+  - positive → green
+  - neutral → gray
+  - negative → red
+
+- Sections separated with spacing/cards
+
+------------------------------------------------------------
+9. LOADING & STATES
+
+- Show loading when:
+  - fetching summary
+  - generating summary
+
+- Show:
+  - "No summary yet" if not generated
+
+- Disable button while generating
+
+------------------------------------------------------------
+10. ERROR HANDLING
+
+- If AI fails:
+  - show error message
+  - do not crash UI
+
+------------------------------------------------------------
+11. CONSTRAINTS
+
+- Do NOT build authentication
+- Do NOT over-engineer UI
+- Keep logic simple and readable
+
+------------------------------------------------------------
+
+Goal:
+Build a working, clean Quarterly Portfolio View that clearly surfaces:
+- what happened
+- what matters (risks)
+- performance direction
+- supporting notes
