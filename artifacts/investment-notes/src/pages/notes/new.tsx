@@ -115,7 +115,7 @@ export default function NewNotePage() {
   return (
     <div className="max-w-3xl mx-auto py-6">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">New Intelligence Note</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">New Note</h1>
         <p className="text-muted-foreground text-sm mt-1">Log deal updates, portfolio developments, or market intelligence.</p>
       </div>
 
@@ -290,7 +290,7 @@ export default function NewNotePage() {
               name="content"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Intelligence</FormLabel>
+                  <FormLabel>Note</FormLabel>
                   <FormControl>
                     <Textarea 
                       placeholder="Detailed notes, meeting takeaways, or analysis..." 
