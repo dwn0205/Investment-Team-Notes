@@ -1,0 +1,302 @@
+You are building a full-stack web application called:
+
+"Investment Team Notes App"
+
+This is an internal tool for an investment (private equity) team to capture notes, track changes, and generate weekly + quarterly investment summaries.
+
+The goal is correctness, clarity, and working functionality (NOT overengineering).
+
+------------------------------------------------------------
+1. TECH STACK (STRICT - DO NOT CHANGE)
+
+Frontend:
+- Next.js (App Router)
+- TypeScript
+- Tailwind CSS
+
+Backend:
+- Next.js API routes (or server actions)
+
+Database:
+- PostgreSQL
+- Prisma ORM (required)
+
+AI:
+- OpenAI GPT-4o (or equivalent)
+
+------------------------------------------------------------
+2. CORE PRINCIPLES (MUST FOLLOW)
+
+• Notes are the source of truth
+• AI outputs are derived and stored separately
+• System must always prioritize data consistency over speed
+• Soft delete only (NO hard delete)
+• AI failures must never break user flows
+
+------------------------------------------------------------
+3. DATABASE SCHEMA (PRISMA - STRICT)
+
+Create the following models exactly:
+
+------------------------------------------------------------
+
+MODEL: Company
+- id (UUID, PK)
+- name (string, unique, required)
+- type (enum: 'pipeline' | 'portfolio')
+- status (string: active | exited | dropped)
+- createdAt (DateTime)
+
+------------------------------------------------------------
+
+MODEL: User
+- id (UUID, PK)
+- email (string, unique)
+- fullName (string)
+- role (enum: associate | principal | director)
+- createdAt (DateTime)
+
+------------------------------------------------------------
+
+MODEL: Note (CORE TABLE)
+- id (UUID, PK)
+
+- companyId (UUID, nullable ONLY if category = 'generic')
+- userId (UUID, required)
+
+- content (text, markdown supported)
+
+- category (enum: generic | pipeline | portfolio)
+
+- stageAtTimeOfNote (enum: initial | final | closed | null)
+
+- noteDate (DateTime)
+
+- includeInWeekly (boolean default false)
+
+- isDeleted (boolean default false)
+
+- versionCount (int default 1)
+
+- createdAt (DateTime)
+- updatedAt (DateTime)
+
+RULES:
+- If category = 'generic' → companyId MUST be null, stage MUST be null
+- If category = pipeline/portfolio → companyId REQUIRED
+- category MUST match company.type
+
+------------------------------------------------------------
+
+MODEL: NoteVersion (Audit Trail)
+- id (UUID)
+- noteId (UUID)
+- contentSnapshot (text)
+- userId (UUID)
+- editReason (string optional)
+- createdAt (DateTime)
+
+RULE:
+- Only created when NOTE CONTENT changes
+
+------------------------------------------------------------
+
+MODEL: NoteAIResult (Derived Layer)
+- id (UUID)
+- noteId (UUID, UNIQUE)
+
+- sentiment (enum: positive | neutral | negative)
+
+- keyExtraction (JSON)
+  {
+    risks: string[],
+    themes: string[],
+    metrics: object
+  }
+
+- source (enum: ai | manual)
+- generatedAt (DateTime)
+
+RULE:
+- Only ONE AI result per note
+- Re-run overwrites previous result
+
+------------------------------------------------------------
+
+MODEL: QuarterlySummary (Reporting Layer)
+- id (UUID)
+
+- companyId (UUID)
+- year (int)
+- quarter (int 1–4)
+
+- summaryText (text)
+
+- overallSentiment (enum: positive | neutral | negative)
+
+- keyThemes (JSON)
+- risks (JSON)
+
+- generatedAt (DateTime)
+
+RULE:
+- UNIQUE (companyId, year, quarter)
+
+------------------------------------------------------------
+4. BUSINESS LOGIC (STRICT)
+
+------------------------------------------------------------
+
+A. CREATE NOTE
+
+- Validate category + company rules
+- Save note
+- Trigger async AI processing (non-blocking)
+
+------------------------------------------------------------
+
+B. UPDATE NOTE (TRANSACTIONAL)
+
+Steps:
+1. Check if content changed
+2. If changed:
+   - Save previous content into NoteVersion
+   - Update Note.currentContent
+   - Increment versionCount
+   - Update updatedAt
+
+------------------------------------------------------------
+
+C. DELETE NOTE
+
+- Soft delete only:
+  → isDeleted = true
+
+RULE:
+- All queries MUST exclude deleted notes
+
+------------------------------------------------------------
+
+D. AI PROCESSING (ASYNC)
+
+Trigger:
+- On note creation OR content update
+
+Task:
+- Extract:
+  - sentiment
+  - risks
+  - themes
+  - metrics
+
+IMPORTANT:
+- If AI fails:
+  → DO NOT block note creation/update
+  → No record is created
+
+- Provide ability to "Re-run AI"
+
+------------------------------------------------------------
+
+E. WEEKLY AGGREGATION
+
+Definition:
+- Last 7 days
+- includeInWeekly = true
+- isDeleted = false
+
+Display:
+- Group by company/category
+- Sorted by noteDate ASC
+
+------------------------------------------------------------
+
+F. QUARTERLY VIEW
+
+Definition:
+Calendar quarters only:
+- Q1: Jan–Mar
+- Q2: Apr–Jun
+- Q3: Jul–Sep
+- Q4: Oct–Dec
+
+Flow:
+1. User selects company + year + quarter
+2. System loads notes + AI results
+3. If summary exists → display it
+4. If not → user clicks "Generate Summary"
+
+Generation:
+- Send notes + AI metadata to OpenAI
+- Output:
+  - 3–5 bullet summary
+  - sentiment
+  - risks
+  - themes
+
+Store result in QuarterlySummary (overwrite if exists)
+
+------------------------------------------------------------
+5. UI REQUIREMENTS
+
+Pages:
+
+1. All Notes Page
+- Table view
+- Filters:
+  - category
+  - company
+  - date range
+  - includeInWeekly
+- Sorted DESC by noteDate
+
+2. Weekly Agenda Page
+- Grouped view
+- Highlight recent activity
+
+3. Quarterly Summary Page
+- Company selector
+- Year/quarter selector
+- Summary + underlying notes
+
+UI rules:
+- Minimal, dense, professional
+- Badges for:
+  - category
+  - sentiment
+- Collapsible sections for readability
+
+------------------------------------------------------------
+6. PERFORMANCE RULES
+
+- AI runs asynchronously
+- Quarterly summaries are cached
+- No recomputation on page load
+- System must work even if AI is unavailable
+
+------------------------------------------------------------
+7. SEED DATA (REQUIRED)
+
+Create:
+- 1 user
+- 3 companies (mix of pipeline + portfolio)
+- 10–15 notes with varied dates and categories
+
+------------------------------------------------------------
+8. NON-GOALS (IMPORTANT)
+
+Do NOT build:
+- authentication system
+- real-time collaboration
+- tagging system
+- CRM integrations
+- permissions system
+
+------------------------------------------------------------
+9. SUCCESS CRITERIA
+
+• Notes can be created, edited, versioned
+• AI outputs are stored structurally
+• Weekly view works instantly
+• Quarterly summaries can be generated and reused
+• System is stable even if AI fails

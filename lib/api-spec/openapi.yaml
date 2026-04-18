@@ -3,20 +3,30 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Investment Team Notes API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: companies
+    description: Company operations
+  - name: users
+    description: User operations
+  - name: notes
+    description: Note operations
+  - name: weekly
+    description: Weekly agenda operations
+  - name: quarterly
+    description: Quarterly summary operations
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +34,322 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /companies:
+    get:
+      operationId: listCompanies
+      tags: [companies]
+      summary: List all companies
+      responses:
+        "200":
+          description: List of companies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Company"
+    post:
+      operationId: createCompany
+      tags: [companies]
+      summary: Create a company
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCompanyBody"
+      responses:
+        "201":
+          description: Created company
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Company"
+
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List all users
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+  /notes:
+    get:
+      operationId: listNotes
+      tags: [notes]
+      summary: List notes with filters
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [generic, pipeline, portfolio]
+        - name: companyId
+          in: query
+          schema:
+            type: string
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+        - name: includeInWeekly
+          in: query
+          schema:
+            type: boolean
+        - name: authorId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NoteWithDetails"
+    post:
+      operationId: createNote
+      tags: [notes]
+      summary: Create a note
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateNoteBody"
+      responses:
+        "201":
+          description: Created note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NoteWithDetails"
+
+  /notes/{id}:
+    get:
+      operationId: getNote
+      tags: [notes]
+      summary: Get a note by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NoteWithDetails"
+    put:
+      operationId: updateNote
+      tags: [notes]
+      summary: Update a note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateNoteBody"
+      responses:
+        "200":
+          description: Updated note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NoteWithDetails"
+    delete:
+      operationId: deleteNote
+      tags: [notes]
+      summary: Soft delete a note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /notes/{id}/versions:
+    get:
+      operationId: getNoteVersions
+      tags: [notes]
+      summary: Get version history for a note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NoteVersion"
+
+  /notes/{id}/ai-result:
+    get:
+      operationId: getNoteAiResult
+      tags: [notes]
+      summary: Get AI result for a note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: AI result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NoteAiResult"
+        "404":
+          description: No AI result yet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /notes/{id}/rerun-ai:
+    post:
+      operationId: rerunNoteAi
+      tags: [notes]
+      summary: Re-run AI analysis for a note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: AI processing started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /weekly:
+    get:
+      operationId: getWeeklyAgenda
+      tags: [weekly]
+      summary: Get weekly agenda (last 7 days, includeInWeekly=true)
+      responses:
+        "200":
+          description: Weekly agenda grouped by company/category
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WeeklyGroup"
+
+  /quarterly/{companyId}/{year}/{quarter}:
+    get:
+      operationId: getQuarterlySummary
+      tags: [quarterly]
+      summary: Get quarterly summary for a company
+      parameters:
+        - name: companyId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: year
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: quarter
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Quarterly summary with underlying notes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuarterlyView"
+
+  /quarterly/{companyId}/{year}/{quarter}/generate:
+    post:
+      operationId: generateQuarterlySummary
+      tags: [quarterly]
+      summary: Generate or regenerate a quarterly summary using AI
+      parameters:
+        - name: companyId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: year
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: quarter
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Generated quarterly summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuarterlySummary"
+
+  /stats/overview:
+    get:
+      operationId: getStatsOverview
+      tags: [notes]
+      summary: Get aggregate stats for the dashboard
+      responses:
+        "200":
+          description: Overview stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatsOverview"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +360,349 @@ components:
       required:
         - status
 
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Company:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [pipeline, portfolio]
+        status:
+          type: string
+          enum: [active, exited, dropped]
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - type
+        - status
+        - createdAt
+
+    CreateCompanyBody:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [pipeline, portfolio]
+        status:
+          type: string
+          enum: [active, exited, dropped]
+      required:
+        - name
+        - type
+        - status
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        fullName:
+          type: string
+        role:
+          type: string
+          enum: [associate, principal, director]
+        createdAt:
+          type: string
+      required:
+        - id
+        - email
+        - fullName
+        - role
+        - createdAt
+
+    NoteWithDetails:
+      type: object
+      properties:
+        id:
+          type: string
+        companyId:
+          type: string
+          nullable: true
+        userId:
+          type: string
+        content:
+          type: string
+        category:
+          type: string
+          enum: [generic, pipeline, portfolio]
+        stageAtTimeOfNote:
+          type: string
+          enum: [initial, final, closed]
+          nullable: true
+        noteDate:
+          type: string
+        includeInWeekly:
+          type: boolean
+        isDeleted:
+          type: boolean
+        versionCount:
+          type: integer
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        company:
+          $ref: "#/components/schemas/Company"
+          nullable: true
+        user:
+          $ref: "#/components/schemas/User"
+        aiResult:
+          $ref: "#/components/schemas/NoteAiResult"
+          nullable: true
+      required:
+        - id
+        - userId
+        - content
+        - category
+        - noteDate
+        - includeInWeekly
+        - isDeleted
+        - versionCount
+        - createdAt
+        - updatedAt
+
+    CreateNoteBody:
+      type: object
+      properties:
+        companyId:
+          type: string
+          nullable: true
+        userId:
+          type: string
+        content:
+          type: string
+        category:
+          type: string
+          enum: [generic, pipeline, portfolio]
+        stageAtTimeOfNote:
+          type: string
+          enum: [initial, final, closed]
+          nullable: true
+        noteDate:
+          type: string
+        includeInWeekly:
+          type: boolean
+      required:
+        - userId
+        - content
+        - category
+        - noteDate
+        - includeInWeekly
+
+    UpdateNoteBody:
+      type: object
+      properties:
+        content:
+          type: string
+        stageAtTimeOfNote:
+          type: string
+          enum: [initial, final, closed]
+          nullable: true
+        includeInWeekly:
+          type: boolean
+        editReason:
+          type: string
+          nullable: true
+      required: []
+
+    NoteVersion:
+      type: object
+      properties:
+        id:
+          type: string
+        noteId:
+          type: string
+        contentSnapshot:
+          type: string
+        userId:
+          type: string
+        editReason:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+      required:
+        - id
+        - noteId
+        - contentSnapshot
+        - userId
+        - createdAt
+
+    NoteAiResult:
+      type: object
+      properties:
+        id:
+          type: string
+        noteId:
+          type: string
+        sentiment:
+          type: string
+          enum: [positive, neutral, negative]
+        keyExtraction:
+          type: object
+          properties:
+            risks:
+              type: array
+              items:
+                type: string
+            themes:
+              type: array
+              items:
+                type: string
+            metrics:
+              type: object
+          required:
+            - risks
+            - themes
+            - metrics
+        source:
+          type: string
+          enum: [ai, manual]
+        generatedAt:
+          type: string
+      required:
+        - id
+        - noteId
+        - sentiment
+        - keyExtraction
+        - source
+        - generatedAt
+
+    WeeklyGroup:
+      type: object
+      properties:
+        groupKey:
+          type: string
+        category:
+          type: string
+          enum: [generic, pipeline, portfolio]
+        company:
+          $ref: "#/components/schemas/Company"
+          nullable: true
+        notes:
+          type: array
+          items:
+            $ref: "#/components/schemas/NoteWithDetails"
+      required:
+        - groupKey
+        - category
+        - notes
+
+    QuarterlySummary:
+      type: object
+      properties:
+        id:
+          type: string
+        companyId:
+          type: string
+        year:
+          type: integer
+        quarter:
+          type: integer
+        summaryText:
+          type: string
+        overallSentiment:
+          type: string
+          enum: [positive, neutral, negative]
+        keyThemes:
+          type: array
+          items:
+            type: string
+        risks:
+          type: array
+          items:
+            type: string
+        generatedAt:
+          type: string
+      required:
+        - id
+        - companyId
+        - year
+        - quarter
+        - summaryText
+        - overallSentiment
+        - keyThemes
+        - risks
+        - generatedAt
+
+    QuarterlyView:
+      type: object
+      properties:
+        summary:
+          $ref: "#/components/schemas/QuarterlySummary"
+          nullable: true
+        notes:
+          type: array
+          items:
+            $ref: "#/components/schemas/NoteWithDetails"
+        company:
+          $ref: "#/components/schemas/Company"
+      required:
+        - notes
+        - company
+
+    StatsOverview:
+      type: object
+      properties:
+        totalNotes:
+          type: integer
+        notesThisWeek:
+          type: integer
+        pipelineNotes:
+          type: integer
+        portfolioNotes:
+          type: integer
+        genericNotes:
+          type: integer
+        positiveNotes:
+          type: integer
+        neutralNotes:
+          type: integer
+        negativeNotes:
+          type: integer
+        companiesTracked:
+          type: integer
+        recentActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/NoteWithDetails"
+      required:
+        - totalNotes
+        - notesThisWeek
+        - pipelineNotes
+        - portfolioNotes
+        - genericNotes
+        - positiveNotes
+        - neutralNotes
+        - negativeNotes
+        - companiesTracked
+        - recentActivity
