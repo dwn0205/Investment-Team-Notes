@@ -321,11 +321,16 @@ export default function QuarterlyPage() {
                           onClick={() => setExpandedNoteId(expandedNoteId === note.id ? null : note.id)}
                         >
                           <div className="flex items-center justify-between gap-4 mb-1.5">
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3 flex-wrap">
                               <span className="text-xs font-medium text-foreground">
                                 {format(new Date(note.noteDate), "MMM d, yyyy")}
                               </span>
                               {note.aiResult && <SentimentBadge sentiment={note.aiResult.sentiment} />}
+                              {note.category === "generic" && !note.companyId && (
+                                <span className="text-[10px] font-medium uppercase tracking-wide px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border">
+                                  Market
+                                </span>
+                              )}
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
                               <span className="text-xs text-muted-foreground">{note.user?.fullName}</span>

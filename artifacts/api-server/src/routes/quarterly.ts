@@ -3,7 +3,7 @@ import { db } from "@workspace/db";
 import {
   notes, companies, quarterlySummaries, noteAiResults
 } from "@workspace/db";
-import { eq, and, gte, lte } from "drizzle-orm";
+import { eq, and, gte, lte, or, isNull } from "drizzle-orm";
 import { openai } from "@workspace/integrations-openai-ai-server";
 
 const router = Router();
@@ -64,7 +64,10 @@ router.get("/:companyId/:year/:quarter", async (req, res) => {
     const { start, end } = getQuarterDateRange(year, quarter);
     const quarterNotes = await db.query.notes.findMany({
       where: and(
-        eq(notes.companyId, companyId),
+        or(
+          eq(notes.companyId, companyId),
+          and(eq(notes.category, "generic"), isNull(notes.companyId))
+        ),
         eq(notes.isDeleted, false),
         gte(notes.noteDate, start),
         lte(notes.noteDate, end)
@@ -117,7 +120,10 @@ router.post("/:companyId/:year/:quarter/generate", async (req, res) => {
     const { start, end } = getQuarterDateRange(year, quarter);
     const quarterNotes = await db.query.notes.findMany({
       where: and(
-        eq(notes.companyId, companyId),
+        or(
+          eq(notes.companyId, companyId),
+          and(eq(notes.category, "generic"), isNull(notes.companyId))
+        ),
         eq(notes.isDeleted, false),
         gte(notes.noteDate, start),
         lte(notes.noteDate, end)
@@ -133,9 +139,10 @@ router.post("/:companyId/:year/:quarter/generate", async (req, res) => {
 
     const noteContext = quarterNotes.map((n: any) => {
       const ai = n.aiResult ? JSON.parse(n.aiResult.keyExtraction ?? "{}") : null;
-      return `Date: ${n.noteDate?.toISOString()?.split("T")[0]}
+      const isGeneric = n.category === "generic" && !n.companyId;
+      return `[${isGeneric ? "Market/Generic Note" : "Company Note"}]
+Date: ${n.noteDate?.toISOString()?.split("T")[0]}
 Author: ${n.user?.fullName} (${n.user?.role})
-Stage: ${n.stageAtTimeOfNote ?? "N/A"}
 Content: ${n.content}
 AI Sentiment: ${n.aiResult?.sentiment ?? "unknown"}
 Risks: ${ai?.risks?.join(", ") ?? "none"}
@@ -143,7 +150,9 @@ Themes: ${ai?.themes?.join(", ") ?? "none"}
 ---`;
     }).join("\n");
 
-    const prompt = `You are an analyst for a private equity firm. Based on the following deal notes for ${company.name} in Q${quarter} ${year}, produce a concise quarterly investment summary.
+    const prompt = `You are an analyst for a private equity firm. Based on the following notes for ${company.name} in Q${quarter} ${year}, produce a concise quarterly investment summary.
+
+Notes are labelled [Company Note] (specific to ${company.name}) or [Market/Generic Note] (broader market context relevant to all portfolio companies). Use both in your analysis — company notes for direct performance insights, market notes for macro context and external risk factors.
 
 ${noteContext}
 
