@@ -173,7 +173,7 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
                 </h4>
                 <ul className="space-y-2">
                   {aiResult.keyExtraction.risks.map((risk, i) => (
-                    <li key={i} className="text-sm p-2 rounded bg-red-500/5 text-red-200 border border-red-500/10 leading-snug">
+                    <li key={i} className="text-sm p-2 rounded bg-red-50 text-red-700 border border-red-200 leading-snug">
                       {risk}
                     </li>
                   ))}
