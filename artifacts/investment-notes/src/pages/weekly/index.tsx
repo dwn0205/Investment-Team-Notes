@@ -128,11 +128,26 @@ export default function WeeklyPage() {
               <p className="text-xl font-bold text-foreground leading-none">{stats.companyCount}</p>
             </div>
           </div>
-          <div className="bg-card border border-card-border rounded-lg px-4 py-3 flex items-center gap-3">
-            <TrendingUp className="h-5 w-5 text-muted-foreground shrink-0" />
+          <div className={`border rounded-lg px-4 py-3 flex items-center gap-3 ${
+            stats.sentimentLabel === "Positive" ? "bg-green-50 border-green-200" :
+            stats.sentimentLabel === "Negative" ? "bg-red-50 border-red-200" :
+            stats.sentimentLabel === "Neutral"  ? "bg-yellow-50 border-yellow-200" :
+            "bg-card border-card-border"
+          }`}>
+            <TrendingUp className={`h-5 w-5 shrink-0 ${
+              stats.sentimentLabel === "Positive" ? "text-green-600" :
+              stats.sentimentLabel === "Negative" ? "text-red-600" :
+              stats.sentimentLabel === "Neutral"  ? "text-yellow-600" :
+              "text-muted-foreground"
+            }`} />
             <div>
               <p className="text-xs text-muted-foreground leading-none mb-1">Sentiment</p>
-              <p className="text-base font-semibold text-foreground leading-none mt-1">{stats.sentimentLabel}</p>
+              <p className={`text-base font-semibold leading-none mt-1 ${
+                stats.sentimentLabel === "Positive" ? "text-green-700" :
+                stats.sentimentLabel === "Negative" ? "text-red-700" :
+                stats.sentimentLabel === "Neutral"  ? "text-yellow-700" :
+                "text-foreground"
+              }`}>{stats.sentimentLabel}</p>
             </div>
           </div>
           <div className="bg-card border border-card-border rounded-lg px-4 py-3 flex items-center gap-3">
