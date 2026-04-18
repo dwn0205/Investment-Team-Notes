@@ -1,7 +1,7 @@
-import { useListNotes, useListCompanies, useListUsers } from "@workspace/api-client-react";
+import { useListNotes, useListCompanies } from "@workspace/api-client-react";
 import { useState } from "react";
 import { format } from "date-fns";
-import { CategoryBadge, SentimentBadge, RoleBadge, CompanyTypeBadge } from "@/components/badges";
+import { CategoryBadge, SentimentBadge, RoleBadge } from "@/components/badges";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,12 +12,16 @@ export default function NotesPage() {
   const [category, setCategory] = useState<string>("all");
   const [companyId, setCompanyId] = useState<string>("all");
   const [search, setSearch] = useState<string>("");
+  const [dateFrom, setDateFrom] = useState<string>("");
+  const [dateTo, setDateTo] = useState<string>("");
 
   const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
 
   const { data: notes, isLoading } = useListNotes({
     category: category !== "all" ? category as any : undefined,
     companyId: companyId !== "all" ? companyId : undefined,
+    dateFrom: dateFrom || undefined,
+    dateTo: dateTo || undefined,
   });
 
   const { data: companies } = useListCompanies();
@@ -30,11 +34,48 @@ export default function NotesPage() {
       )
     : notes;
 
+  const dateError = dateFrom && dateTo && dateTo < dateFrom
+    ? "End date must be after start date"
+    : null;
+
   return (
     <div className="space-y-5 max-w-[1400px] mx-auto">
-      <div>
-        <h1 className="text-xl font-bold tracking-tight text-foreground">All Notes</h1>
-        <p className="text-muted-foreground text-sm mt-0.5">Review your recent deal activity and thoughts.</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">All Notes</h1>
+          <p className="text-muted-foreground text-sm mt-0.5">Review your recent deal activity and thoughts.</p>
+        </div>
+
+        {/* Date range — top right */}
+        <div className="flex flex-col items-end gap-1">
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={e => setDateFrom(e.target.value)}
+              className="h-9 px-3 rounded-md border border-border bg-white text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+            <span className="text-muted-foreground text-sm">–</span>
+            <input
+              type="date"
+              value={dateTo}
+              min={dateFrom || undefined}
+              onChange={e => setDateTo(e.target.value)}
+              className="h-9 px-3 rounded-md border border-border bg-white text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+            {(dateFrom || dateTo) && (
+              <button
+                onClick={() => { setDateFrom(""); setDateTo(""); }}
+                className="text-xs text-muted-foreground hover:text-foreground underline"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+          {dateError && (
+            <span className="text-xs text-red-500">{dateError}</span>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
@@ -78,7 +119,6 @@ export default function NotesPage() {
       )}
 
       <div className="rounded-md border border-border bg-white overflow-hidden">
-        {/* Header */}
         <div className="grid grid-cols-[90px_100px_130px_minmax(140px,1.2fr)_140px_80px_minmax(180px,2fr)_32px] gap-3 px-4 py-2.5 border-b border-border bg-gray-50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           <div>Date</div>
           <div>Category</div>
@@ -135,8 +175,7 @@ export default function NotesPage() {
                   <div className="overflow-hidden">
                     {note.company ? (
                       <span className="text-sm font-medium text-foreground truncate block">
-                        {note.company.name}{" "}
-                        <CompanyTypeBadge type={note.company.type} />
+                        {note.company.name}
                       </span>
                     ) : (
                       <span className="text-muted-foreground text-sm">—</span>
