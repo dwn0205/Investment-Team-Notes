@@ -52,6 +52,8 @@ export default function QuarterlyPage() {
   const [quarter, setQuarter] = useState<number>(currentQuarter);
   const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
   const [notesOpen, setNotesOpen] = useState(true);
+  const [companyNotesOpen, setCompanyNotesOpen] = useState(true);
+  const [genericNotesOpen, setGenericNotesOpen] = useState(true);
   const [generateError, setGenerateError] = useState<string | null>(null);
 
   const { data: allCompanies } = useListCompanies();
@@ -355,30 +357,48 @@ export default function QuarterlyPage() {
                     {/* Company notes */}
                     {companyNotes.length > 0 && (
                       <div>
-                        <div className="px-5 py-2.5 bg-muted/30 border-b border-card-border flex items-center gap-2">
+                        <button
+                          className="w-full flex items-center gap-2 px-5 py-2.5 bg-muted/30 border-b border-card-border hover:bg-muted/50 transition-colors text-left"
+                          onClick={() => setCompanyNotesOpen((v) => !v)}
+                        >
+                          {companyNotesOpen
+                            ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                            : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          }
                           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                             Company Notes
                           </span>
                           <span className="text-xs text-muted-foreground">({companyNotes.length})</span>
-                        </div>
-                        <div className="divide-y divide-border">
-                          {companyNotes.map((note) => <NoteRow key={note.id} note={note} />)}
-                        </div>
+                        </button>
+                        {companyNotesOpen && (
+                          <div className="divide-y divide-border">
+                            {companyNotes.map((note) => <NoteRow key={note.id} note={note} />)}
+                          </div>
+                        )}
                       </div>
                     )}
 
                     {/* Generic / Market notes */}
                     {genericNotes.length > 0 && (
                       <div className={companyNotes.length > 0 ? "border-t border-card-border" : ""}>
-                        <div className="px-5 py-2.5 bg-muted/30 border-b border-card-border flex items-center gap-2">
+                        <button
+                          className="w-full flex items-center gap-2 px-5 py-2.5 bg-muted/30 border-b border-card-border hover:bg-muted/50 transition-colors text-left"
+                          onClick={() => setGenericNotesOpen((v) => !v)}
+                        >
+                          {genericNotesOpen
+                            ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                            : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          }
                           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                             Market / Generic Notes
                           </span>
                           <span className="text-xs text-muted-foreground">({genericNotes.length})</span>
-                        </div>
-                        <div className="divide-y divide-border">
-                          {genericNotes.map((note) => <NoteRow key={note.id} note={note} />)}
-                        </div>
+                        </button>
+                        {genericNotesOpen && (
+                          <div className="divide-y divide-border">
+                            {genericNotes.map((note) => <NoteRow key={note.id} note={note} />)}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
