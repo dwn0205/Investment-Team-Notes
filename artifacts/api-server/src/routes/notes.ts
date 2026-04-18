@@ -97,15 +97,20 @@ router.post("/", async (req, res) => {
     res.status(400).json({ error: "companyId must be null for generic notes" });
     return;
   }
+  if (data.category === "portfolio" && data.stageAtTimeOfNote && data.stageAtTimeOfNote !== "closed") {
+    res.status(400).json({ error: "Portfolio notes must have stage 'closed'" });
+    return;
+  }
 
   try {
     const noteDate = data.noteDate ? new Date(data.noteDate as string) : new Date();
+    const resolvedStage = data.category === "portfolio" ? "closed" : (data.stageAtTimeOfNote ?? null);
     const [note] = await db.insert(notes).values({
       companyId: data.companyId ?? null,
       userId: data.userId,
       content: data.content,
       category: data.category as any,
-      stageAtTimeOfNote: (data.stageAtTimeOfNote as any) ?? null,
+      stageAtTimeOfNote: resolvedStage as any,
       noteDate,
       includeInWeekly: data.includeInWeekly,
     }).returning();

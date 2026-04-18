@@ -1,6 +1,7 @@
 import {
-  pgTable, text, uuid, timestamp, boolean, integer, pgEnum
+  pgTable, text, uuid, timestamp, boolean, integer, pgEnum, check
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { companies } from "./companies";
@@ -22,7 +23,12 @@ export const notes = pgTable("notes", {
   versionCount: integer("version_count").notNull().default(1),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+}, (t) => [
+  check(
+    "portfolio_stage_must_be_closed",
+    sql`NOT (${t.category} = 'portfolio' AND ${t.stageAtTimeOfNote} IS DISTINCT FROM 'closed')`
+  ),
+]);
 
 export const insertNoteSchema = createInsertSchema(notes).omit({ id: true, createdAt: true, updatedAt: true, isDeleted: true, versionCount: true });
 export type InsertNote = z.infer<typeof insertNoteSchema>;

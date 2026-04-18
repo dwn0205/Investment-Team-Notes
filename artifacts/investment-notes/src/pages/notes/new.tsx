@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,6 +32,13 @@ const formSchema = z.object({
       path: ["companyId"],
     });
   }
+  if (data.category === "portfolio" && data.stageAtTimeOfNote !== "closed") {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Portfolio notes must have stage 'Closed'",
+      path: ["stageAtTimeOfNote"],
+    });
+  }
 });
 
 export default function NewNotePage() {
@@ -55,6 +62,13 @@ export default function NewNotePage() {
 
   const category = form.watch("category");
   const isGeneric = category === "generic";
+  const isPortfolio = category === "portfolio";
+
+  useEffect(() => {
+    if (isPortfolio) {
+      form.setValue("stageAtTimeOfNote", "closed" as any, { shouldValidate: true });
+    }
+  }, [isPortfolio, form]);
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     createNote.mutate({
@@ -202,11 +216,15 @@ export default function NewNotePage() {
               name="stageAtTimeOfNote"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Deal Stage {isGeneric && <span className="text-muted-foreground font-normal">(Optional)</span>}</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    defaultValue={field.value || undefined}
-                    disabled={isGeneric}
+                  <FormLabel>
+                    Deal Stage{" "}
+                    {isGeneric && <span className="text-muted-foreground font-normal">(Optional)</span>}
+                    {isPortfolio && <span className="text-muted-foreground font-normal ml-1">— locked to Closed</span>}
+                  </FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value || undefined}
+                    disabled={isGeneric || isPortfolio}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -214,8 +232,8 @@ export default function NewNotePage() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="initial">Initial</SelectItem>
-                      <SelectItem value="final">Final</SelectItem>
+                      {!isPortfolio && <SelectItem value="initial">Initial</SelectItem>}
+                      {!isPortfolio && <SelectItem value="final">Final</SelectItem>}
                       <SelectItem value="closed">Closed</SelectItem>
                     </SelectContent>
                   </Select>
