@@ -125,7 +125,7 @@ export default function NotesPage() {
           <div>Sentiment</div>
           <div>Company</div>
           <div>Author</div>
-          <div>Weekly</div>
+          <div>Agenda</div>
           <div>Content</div>
           <div />
         </div>
