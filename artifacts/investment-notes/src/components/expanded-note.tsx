@@ -6,7 +6,7 @@ import { useActiveUser } from "@/contexts/user-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, History, RefreshCw, AlertTriangle, Lightbulb, Activity, Check, X, Clock, User as UserIcon } from "lucide-react";
+import { Sparkles, History, RefreshCw, AlertTriangle, Check, X, Clock, User as UserIcon } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { SentimentBadge } from "@/components/badges";
 import { toast } from "sonner";
@@ -188,40 +188,6 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
               </div>
             )}
 
-            {aiResult.keyExtraction.themes && aiResult.keyExtraction.themes.length > 0 && (
-              <div>
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
-                  <Lightbulb className="h-3.5 w-3.5" /> Core Themes
-                </h4>
-                <div className="flex flex-wrap gap-1.5">
-                  {aiResult.keyExtraction.themes.map((theme, i) => (
-                    <span key={i} className="text-xs px-2 py-1 rounded bg-primary/10 text-primary border border-primary/20">
-                      {theme}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {aiResult.keyExtraction.metrics && Object.keys(aiResult.keyExtraction.metrics).length > 0 && (
-              <div>
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
-                  <Activity className="h-3.5 w-3.5" /> Extracted Metrics
-                </h4>
-                <div className="grid grid-cols-2 gap-2">
-                  {Object.entries(aiResult.keyExtraction.metrics).map(([key, value], i) => (
-                    <div key={i} className="p-2 rounded bg-background border border-border">
-                      <div className="text-xs text-muted-foreground mb-0.5 truncate">{key}</div>
-                      <div className="font-mono text-sm truncate">{String(value)}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            <div className="text-[10px] text-muted-foreground pt-4 border-t border-border mt-4">
-              Generated {format(new Date(aiResult.generatedAt), "MMM d, yyyy HH:mm")}
-            </div>
           </div>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-6 border border-dashed border-border rounded-lg bg-background/50">
