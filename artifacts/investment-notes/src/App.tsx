@@ -10,7 +10,15 @@ import NewNotePage from "@/pages/notes/new";
 import WeeklyPage from "@/pages/weekly";
 import QuarterlyPage from "@/pages/quarterly";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 0,
+      refetchOnMount: true,
+      refetchOnWindowFocus: true,
+    },
+  },
+});
 
 function Router() {
   return (
