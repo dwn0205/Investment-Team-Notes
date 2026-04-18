@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/layout";
+import { UserProvider } from "@/contexts/user-context";
 import NotFound from "@/pages/not-found";
 import NotesPage from "@/pages/notes";
 import NewNotePage from "@/pages/notes/new";
@@ -31,10 +32,10 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <div className="dark">
+          <UserProvider>
             <Router />
             <Toaster />
-          </div>
+          </UserProvider>
         </WouterRouter>
       </TooltipProvider>
     </QueryClientProvider>

@@ -195,6 +195,7 @@ export interface UpdateNoteBody {
   stageAtTimeOfNote?: UpdateNoteBodyStageAtTimeOfNote;
   includeInWeekly?: boolean;
   editReason?: string | null;
+  editedByUserId?: string;
 }
 
 export interface NoteVersion {

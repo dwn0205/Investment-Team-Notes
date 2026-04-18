@@ -186,6 +186,7 @@ export const UpdateNoteBody = zod.object({
   stageAtTimeOfNote: zod.enum(["initial", "final", "closed"]).nullish(),
   includeInWeekly: zod.boolean().optional(),
   editReason: zod.string().nullish(),
+  editedByUserId: zod.string().optional(),
 });
 
 export const UpdateNoteResponse = zod.object({

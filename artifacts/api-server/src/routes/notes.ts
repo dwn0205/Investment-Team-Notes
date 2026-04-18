@@ -158,15 +158,15 @@ router.put("/:id", async (req, res) => {
       return;
     }
 
-    const { content, stageAtTimeOfNote, includeInWeekly, editReason } = parsed.data;
+    const { content, stageAtTimeOfNote, includeInWeekly, editReason, editedByUserId } = parsed.data;
     const contentChanged = content !== undefined && content !== existing.content;
 
     if (contentChanged) {
-      // Save version before updating
+      // Save version before updating — attribute to the editor if provided, else the note's original author
       await db.insert(noteVersions).values({
         noteId: existing.id,
         contentSnapshot: existing.content,
-        userId: existing.userId,
+        userId: editedByUserId ?? existing.userId,
         editReason: editReason ?? null,
       });
     }

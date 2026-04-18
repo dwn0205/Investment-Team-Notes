@@ -2,6 +2,7 @@ import { NoteWithDetails } from "@workspace/api-client-react";
 import { format } from "date-fns";
 import { useGetNoteAiResult, useRerunNoteAi, useUpdateNote, getGetNoteQueryKey, getListNotesQueryKey, useGetNoteVersions } from "@workspace/api-client-react";
 import { useState } from "react";
+import { useActiveUser } from "@/contexts/user-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,6 +19,7 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
   const [content, setContent] = useState(note.content);
   const [editReason, setEditReason] = useState("");
   
+  const { activeUser } = useActiveUser();
   const queryClient = useQueryClient();
   const updateNote = useUpdateNote();
   const rerunAi = useRerunNoteAi();
@@ -32,7 +34,7 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
 
   const handleSave = () => {
     if (!content.trim()) return;
-    updateNote.mutate({ id: note.id, data: { content, editReason: editReason || "General update" } }, {
+    updateNote.mutate({ id: note.id, data: { content, editReason: editReason || "General update", editedByUserId: activeUser?.id } }, {
       onSuccess: () => {
         toast.success("Note updated successfully");
         setIsEditing(false);
@@ -108,6 +110,11 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
               <Button variant="secondary" size="sm" onClick={() => setIsEditing(true)}>Edit Note</Button>
             ) : (
               <>
+                {activeUser && (
+                  <span className="text-xs text-muted-foreground flex items-center gap-1 mr-1">
+                    <UserIcon className="h-3 w-3" /> {activeUser.fullName}
+                  </span>
+                )}
                 <Button variant="ghost" size="sm" onClick={() => { setIsEditing(false); setContent(note.content); }}>Cancel</Button>
                 <Button size="sm" onClick={handleSave} disabled={updateNote.isPending || !content.trim()}>
                   {updateNote.isPending ? <RefreshCw className="h-3 w-3 mr-2 animate-spin" /> : <Check className="h-3 w-3 mr-2" />}

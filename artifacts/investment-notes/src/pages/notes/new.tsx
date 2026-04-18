@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import { useActiveUser } from "@/contexts/user-context";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -43,6 +44,7 @@ const formSchema = z.object({
 
 export default function NewNotePage() {
   const [, setLocation] = useLocation();
+  const { activeUser } = useActiveUser();
   const createNote = useCreateNote();
   const { data: companies } = useListCompanies();
   const { data: users } = useListUsers();
@@ -54,7 +56,7 @@ export default function NewNotePage() {
       includeInWeekly: false,
       noteDate: new Date(),
       content: "",
-      userId: "",
+      userId: activeUser?.id ?? "",
       companyId: null,
       stageAtTimeOfNote: null,
     },
@@ -63,6 +65,13 @@ export default function NewNotePage() {
   const category = form.watch("category");
   const isGeneric = category === "generic";
   const isPortfolio = category === "portfolio";
+
+  // Keep author in sync with the active user switcher
+  useEffect(() => {
+    if (activeUser?.id) {
+      form.setValue("userId", activeUser.id, { shouldValidate: true });
+    }
+  }, [activeUser, form]);
 
   useEffect(() => {
     if (isPortfolio) {
