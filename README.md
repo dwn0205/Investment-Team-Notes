@@ -116,7 +116,136 @@ AI processing is always non-blocking: if it fails, the note is still saved and t
 
 ---
 
-## 7. Key Commands
+## 7. Data Model
+
+The database has six tables. Here is each one, what it stores, and why it was designed that way.
+
+---
+
+### `users`
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | UUID | Primary key, auto-generated |
+| `email` | text | Unique — one account per person |
+| `full_name` | text | Display name |
+| `role` | enum | `associate`, `principal`, or `director` |
+| `created_at` | timestamp | Record creation time |
+
+**Why:** The app is multi-user. Every note is attributed to a team member, and their role is shown alongside notes so readers know the seniority/perspective of who wrote it.
+
+---
+
+### `companies`
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | UUID | Primary key, auto-generated |
+| `name` | text | Unique company name |
+| `type` | enum | `pipeline` (being evaluated) or `portfolio` (already invested) |
+| `status` | enum | `active`, `exited`, or `dropped` |
+| `created_at` | timestamp | Record creation time |
+
+**Why:** The two types (`pipeline` vs `portfolio`) drive different behaviour across the app. Quarterly summaries are only for portfolio companies (you've already invested). Pipeline companies are tracked during evaluation. The `status` field lets the team mark companies as exited or dropped without deleting them — preserving the historical note record.
+
+---
+
+### `notes`
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | UUID | Primary key, auto-generated |
+| `company_id` | UUID | Optional — null for generic/market notes |
+| `user_id` | UUID | Who wrote the note |
+| `content` | text | The note body |
+| `category` | enum | `generic`, `pipeline`, or `portfolio` |
+| `stage_at_time_of_note` | enum | `initial`, `final`, or `closed` — pipeline stage when note was written |
+| `note_date` | timestamp | When the activity/observation occurred (not when it was entered) |
+| `include_in_weekly` | boolean | Whether this note surfaces in the weekly agenda |
+| `is_deleted` | boolean | Soft delete — records are never physically removed |
+| `version_count` | integer | How many times the content has been edited |
+| `created_at` / `updated_at` | timestamp | Record timestamps |
+
+**Why this design:**
+- `note_date` is separate from `created_at` because analysts often log notes after the fact — you might write up a call on Friday that happened on Tuesday. `note_date` is the business date; `created_at` is the system date.
+- `company_id` is nullable so that market observations and macro notes (not tied to any company) can still be logged in the same system.
+- `is_deleted` (soft delete) means deleted notes are hidden but never lost. This is important for audit trails — a PE firm needs to be able to reconstruct its decision history.
+- `include_in_weekly` is a deliberate flag — analysts choose which notes are relevant enough to surface in the weekly team agenda. Not every note is worth discussing.
+- A database-level `CHECK` constraint enforces that portfolio notes must always have `stage_at_time_of_note = 'closed'`, since a portfolio company is past the pipeline stage.
+
+---
+
+### `note_versions`
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | UUID | Primary key |
+| `note_id` | UUID | Links to the parent note |
+| `content_snapshot` | text | Full copy of the note content at that point in time |
+| `user_id` | UUID | Who made the edit |
+| `edit_reason` | text | Optional explanation for the change |
+| `created_at` | timestamp | When the edit happened |
+
+**Why:** Any time a note's content changes, a version record is created. This gives a complete audit trail — who changed what, when, and why. This matters in a regulated investment context where decisions need to be traceable.
+
+---
+
+### `note_ai_results`
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | UUID | Primary key |
+| `note_id` | UUID | One-to-one link to a note (unique constraint) |
+| `sentiment` | enum | `positive`, `neutral`, or `negative` |
+| `sentiment_score` | real | Numeric score from -1.0 (very negative) to 1.0 (very positive) |
+| `key_extraction` | text | JSON blob — risks, themes, and key metrics extracted from the note |
+| `source` | enum | `ai` (generated) or `manual` (human override) |
+| `generated_at` | timestamp | When the AI processed it |
+
+**Why:** AI analysis is stored separately from notes rather than as columns on the `notes` table for two reasons. First, AI processing is async — the note exists before the AI result does. Second, it keeps the notes table clean and focused on the content the human wrote. The one-to-one unique constraint (`note_id`) ensures each note has at most one active AI result; re-processing a note replaces the previous result.
+
+The `sentiment_score` gives more granularity than the three-label sentiment alone — a score of -0.9 and -0.1 are both "negative" but very different in severity.
+
+---
+
+### `quarterly_summaries`
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | UUID | Primary key |
+| `company_id` | UUID | Which portfolio company |
+| `year` | integer | e.g. 2026 |
+| `quarter` | integer | 1–4 |
+| `summary_text` | text | AI-generated executive summary (bullet points) |
+| `overall_sentiment` | enum | `positive`, `neutral`, or `negative` |
+| `key_themes` | text | JSON array of themes |
+| `risks` | text | JSON array of risks |
+| `generated_at` | timestamp | When the summary was generated |
+
+**Why:** Generating a quarterly summary from scratch via AI every time someone opens the page would be slow and expensive. Instead, results are cached here. The team can explicitly regenerate when they want a fresh analysis. The summary is scoped to `company_id + year + quarter` — one record per company per quarter.
+
+---
+
+### Relationships at a Glance
+
+```
+users ──────────────< notes >─────────── companies
+                        │
+               ┌────────┴────────┐
+               │                 │
+         note_versions    note_ai_results
+
+companies ──< quarterly_summaries
+```
+
+- One **user** writes many **notes**
+- One **company** has many **notes** and many **quarterly_summaries**
+- One **note** has many **note_versions** (edit history)
+- One **note** has at most one **note_ai_results** record
+
+---
+
+## 8. Key Commands
 
 | Command | What it does |
 |---|---|
