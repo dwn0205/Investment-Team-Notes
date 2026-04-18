@@ -119,13 +119,12 @@ export default function NotesPage() {
       )}
 
       <div className="rounded-md border border-border bg-white overflow-hidden">
-        <div className="grid grid-cols-[90px_100px_130px_minmax(140px,1.2fr)_140px_80px_52px_minmax(180px,2fr)_32px] gap-3 px-4 py-2.5 border-b border-border bg-gray-50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        <div className="grid grid-cols-[90px_100px_130px_minmax(140px,1.2fr)_140px_52px_minmax(180px,2fr)_32px] gap-3 px-4 py-2.5 border-b border-border bg-gray-50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           <div>Date</div>
           <div>Category</div>
           <div>Sentiment</div>
           <div>Company</div>
           <div>Author</div>
-          <div>Stage</div>
           <div>Weekly</div>
           <div>Content</div>
           <div />
@@ -154,7 +153,7 @@ export default function NotesPage() {
             filtered?.map((note) => (
               <div key={note.id} className="flex flex-col">
                 <div
-                  className={`grid grid-cols-[90px_100px_130px_minmax(140px,1.2fr)_140px_80px_52px_minmax(180px,2fr)_32px] gap-3 px-4 py-3 items-center cursor-pointer transition-colors hover:bg-gray-50 ${expandedNoteId === note.id ? "bg-gray-50" : ""}`}
+                  className={`grid grid-cols-[90px_100px_130px_minmax(140px,1.2fr)_140px_52px_minmax(180px,2fr)_32px] gap-3 px-4 py-3 items-center cursor-pointer transition-colors hover:bg-gray-50 ${expandedNoteId === note.id ? "bg-gray-50" : ""}`}
                   onClick={() => setExpandedNoteId(expandedNoteId === note.id ? null : note.id)}
                 >
                   <div className="text-sm text-foreground/80 whitespace-nowrap">
@@ -186,10 +185,6 @@ export default function NotesPage() {
                   <div className="flex flex-col gap-0.5 overflow-hidden">
                     <span className="text-sm font-medium text-foreground truncate">{note.user?.fullName}</span>
                     {note.user?.role && <RoleBadge role={note.user.role} />}
-                  </div>
-
-                  <div className="text-sm text-foreground/70 capitalize">
-                    {note.stageAtTimeOfNote || "—"}
                   </div>
 
                   <div>
