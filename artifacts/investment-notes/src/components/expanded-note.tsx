@@ -1,8 +1,8 @@
 import { NoteWithDetails } from "@workspace/api-client-react";
 import { format } from "date-fns";
-import { useGetNoteAiResult, useRerunNoteAi, useUpdateNote, useDeleteNote, getGetNoteQueryKey, getListNotesQueryKey, useGetNoteVersions } from "@workspace/api-client-react";
+import { useGetNoteAiResult, useRerunNoteAi, useUpdateNote, useDeleteNote, getGetNoteQueryKey, getListNotesQueryKey, getGetNoteAiResultQueryKey, useGetNoteVersions } from "@workspace/api-client-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useActiveUser } from "@/contexts/user-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,8 +30,15 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
   const rerunAi = useRerunNoteAi();
   
   const { data: aiResult, isLoading: aiLoading } = useGetNoteAiResult(note.id, {
-    query: { enabled: true, queryKey: [`/api/notes/${note.id}/ai`] }
+    query: { enabled: true, queryKey: getGetNoteAiResultQueryKey(note.id) }
   });
+
+  // Keep the notes table in sync: if the panel fetches a fresher sentiment, refresh the list
+  useEffect(() => {
+    if (aiResult && aiResult.sentiment !== note.aiResult?.sentiment) {
+      queryClient.invalidateQueries({ queryKey: getListNotesQueryKey() });
+    }
+  }, [aiResult?.sentiment]);
 
   const { data: versions } = useGetNoteVersions(note.id, {
     query: { enabled: true, queryKey: [`/api/notes/${note.id}/versions`] }
@@ -55,7 +62,8 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
     rerunAi.mutate({ id: note.id }, {
       onSuccess: () => {
         toast.success("AI analysis scheduled");
-        queryClient.invalidateQueries({ queryKey: [`/api/notes/${note.id}/ai`] });
+        queryClient.invalidateQueries({ queryKey: getGetNoteAiResultQueryKey(note.id) });
+        queryClient.invalidateQueries({ queryKey: getListNotesQueryKey() });
       }
     });
   };
