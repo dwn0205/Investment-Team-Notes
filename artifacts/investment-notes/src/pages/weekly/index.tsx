@@ -2,7 +2,7 @@ import { useGetWeeklyAgenda } from "@workspace/api-client-react";
 import { format } from "date-fns";
 import { SentimentBadge, RoleBadge } from "@/components/badges";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CalendarX2, Hash, LayoutList, User } from "lucide-react";
+import { CalendarX2, Hash, LayoutList, User, FileText, Building2, AlertTriangle, TrendingUp } from "lucide-react";
 import { ExpandedNoteView } from "@/components/expanded-note";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,29 @@ export default function WeeklyPage() {
     () => agendaGroups?.flatMap((g) => g.notes) ?? [],
     [agendaGroups]
   );
+
+  const stats = useMemo(() => {
+    const noteCount = allNotes.length;
+    const companyCount = new Set(allNotes.map((n) => n.companyId).filter(Boolean)).size;
+
+    const sentimentCounts = { positive: 0, neutral: 0, negative: 0 };
+    let totalRisks = 0;
+
+    for (const note of allNotes) {
+      const s = note.aiResult?.sentiment;
+      if (s === "positive" || s === "neutral" || s === "negative") sentimentCounts[s]++;
+      totalRisks += (note.aiResult?.keyExtraction as any)?.risks?.length ?? 0;
+    }
+
+    const max = Math.max(...Object.values(sentimentCounts));
+    const dominant = Object.entries(sentimentCounts).filter(([, v]) => v === max);
+    const sentimentLabel =
+      dominant.length > 1 || max === 0
+        ? "Mixed"
+        : dominant[0][0].charAt(0).toUpperCase() + dominant[0][0].slice(1);
+
+    return { noteCount, companyCount, totalRisks, sentimentLabel, sentimentCounts };
+  }, [allNotes]);
 
   const groups = useMemo(() => {
     if (!allNotes.length) return [];
@@ -88,6 +111,39 @@ export default function WeeklyPage() {
           </div>
         </div>
       </div>
+
+      {!isLoading && allNotes.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="bg-card border border-card-border rounded-lg px-4 py-3 flex items-center gap-3">
+            <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
+            <div>
+              <p className="text-xs text-muted-foreground leading-none mb-1">Notes</p>
+              <p className="text-xl font-bold text-foreground leading-none">{stats.noteCount}</p>
+            </div>
+          </div>
+          <div className="bg-card border border-card-border rounded-lg px-4 py-3 flex items-center gap-3">
+            <Building2 className="h-5 w-5 text-muted-foreground shrink-0" />
+            <div>
+              <p className="text-xs text-muted-foreground leading-none mb-1">Companies</p>
+              <p className="text-xl font-bold text-foreground leading-none">{stats.companyCount}</p>
+            </div>
+          </div>
+          <div className="bg-card border border-card-border rounded-lg px-4 py-3 flex items-center gap-3">
+            <TrendingUp className="h-5 w-5 text-muted-foreground shrink-0" />
+            <div>
+              <p className="text-xs text-muted-foreground leading-none mb-1">Sentiment</p>
+              <p className="text-base font-semibold text-foreground leading-none mt-1">{stats.sentimentLabel}</p>
+            </div>
+          </div>
+          <div className="bg-card border border-card-border rounded-lg px-4 py-3 flex items-center gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0" />
+            <div>
+              <p className="text-xs text-muted-foreground leading-none mb-1">Risks Flagged</p>
+              <p className="text-xl font-bold text-foreground leading-none">{stats.totalRisks}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="space-y-8">
