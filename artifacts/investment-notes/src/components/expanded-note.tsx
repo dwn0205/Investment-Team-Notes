@@ -6,7 +6,9 @@ import { useActiveUser } from "@/contexts/user-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, History, RefreshCw, AlertTriangle, Check, X, Clock, User as UserIcon } from "lucide-react";
+import { Sparkles, History, RefreshCw, AlertTriangle, Check, X, Clock, User as UserIcon, CalendarCheck } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { useQueryClient } from "@tanstack/react-query";
 import { SentimentBadge } from "@/components/badges";
 import { toast } from "sonner";
@@ -18,6 +20,7 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
   const [isEditing, setIsEditing] = useState(false);
   const [content, setContent] = useState(note.content);
   const [editReason, setEditReason] = useState("");
+  const [includeInWeekly, setIncludeInWeekly] = useState(note.includeInWeekly);
   
   const { activeUser } = useActiveUser();
   const queryClient = useQueryClient();
@@ -34,7 +37,7 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
 
   const handleSave = () => {
     if (!content.trim()) return;
-    updateNote.mutate({ id: note.id, data: { content, editReason: editReason || "General update", editedByUserId: activeUser?.id } }, {
+    updateNote.mutate({ id: note.id, data: { content, includeInWeekly, editReason: editReason || "General update", editedByUserId: activeUser?.id } }, {
       onSuccess: () => {
         toast.success("Note updated successfully");
         setIsEditing(false);
@@ -115,7 +118,7 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
                     <UserIcon className="h-3 w-3" /> {activeUser.fullName}
                   </span>
                 )}
-                <Button variant="ghost" size="sm" onClick={() => { setIsEditing(false); setContent(note.content); }}>Cancel</Button>
+                <Button variant="ghost" size="sm" onClick={() => { setIsEditing(false); setContent(note.content); setIncludeInWeekly(note.includeInWeekly); }}>Cancel</Button>
                 <Button size="sm" onClick={handleSave} disabled={updateNote.isPending || !content.trim()}>
                   {updateNote.isPending ? <RefreshCw className="h-3 w-3 mr-2 animate-spin" /> : <Check className="h-3 w-3 mr-2" />}
                   Save
@@ -139,6 +142,17 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
               onChange={e => setEditReason(e.target.value)}
               className="bg-background"
             />
+            <div className="flex items-center gap-2 pt-1">
+              <Checkbox
+                id="includeInWeekly"
+                checked={includeInWeekly}
+                onCheckedChange={(v) => setIncludeInWeekly(!!v)}
+              />
+              <Label htmlFor="includeInWeekly" className="text-sm font-normal cursor-pointer flex items-center gap-1.5">
+                <CalendarCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                Include in Weekly Agenda
+              </Label>
+            </div>
           </div>
         ) : (
           <div className="flex-1 p-4 bg-background rounded-md border border-card-border overflow-y-auto whitespace-pre-wrap text-sm leading-relaxed">
