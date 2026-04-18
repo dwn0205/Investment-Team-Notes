@@ -142,17 +142,19 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
               onChange={e => setEditReason(e.target.value)}
               className="bg-background"
             />
-            <div className="flex items-center gap-2 pt-1">
-              <Checkbox
-                id="includeInWeekly"
-                checked={includeInWeekly}
-                onCheckedChange={(v) => setIncludeInWeekly(!!v)}
-              />
-              <Label htmlFor="includeInWeekly" className="text-sm font-normal cursor-pointer flex items-center gap-1.5">
-                <CalendarCheck className="h-3.5 w-3.5 text-muted-foreground" />
-                Include in Weekly Agenda
-              </Label>
-            </div>
+            {activeUser?.role === "director" && (
+              <div className="flex items-center gap-2 pt-1">
+                <Checkbox
+                  id="includeInWeekly"
+                  checked={includeInWeekly}
+                  onCheckedChange={(v) => setIncludeInWeekly(!!v)}
+                />
+                <Label htmlFor="includeInWeekly" className="text-sm font-normal cursor-pointer flex items-center gap-1.5">
+                  <CalendarCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                  Include in Weekly Agenda
+                </Label>
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex-1 p-4 bg-background rounded-md border border-card-border overflow-y-auto whitespace-pre-wrap text-sm leading-relaxed">
