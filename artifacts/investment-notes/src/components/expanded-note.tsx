@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { useGetNoteAiResult, useRerunNoteAi, useUpdateNote, getGetNoteQueryKey, getListNotesQueryKey, useGetNoteVersions } from "@workspace/api-client-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Sparkles, History, RefreshCw, AlertTriangle, Lightbulb, Activity, Check, X, Clock, User as UserIcon } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
