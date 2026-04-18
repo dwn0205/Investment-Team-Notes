@@ -128,6 +128,7 @@ export interface NoteAiResult {
   id: string;
   noteId: string;
   sentiment: NoteAiResultSentiment;
+  sentimentScore?: number | null;
   keyExtraction: NoteAiResultKeyExtraction;
   source: NoteAiResultSource;
   generatedAt: string;

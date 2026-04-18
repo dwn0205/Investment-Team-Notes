@@ -1,5 +1,5 @@
 import {
-  pgTable, text, uuid, timestamp, boolean, integer, pgEnum, check
+  pgTable, text, uuid, timestamp, boolean, integer, real, pgEnum, check
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
@@ -54,6 +54,7 @@ export const noteAiResults = pgTable("note_ai_results", {
   id: uuid("id").primaryKey().defaultRandom(),
   noteId: uuid("note_id").notNull().unique().references(() => notes.id),
   sentiment: sentimentEnum("sentiment").notNull(),
+  sentimentScore: real("sentiment_score"),
   keyExtraction: text("key_extraction").notNull(),
   source: aiSourceEnum("source").notNull().default("ai"),
   generatedAt: timestamp("generated_at").notNull().defaultNow(),

@@ -14,13 +14,15 @@ ${content}
 Respond with valid JSON only, no markdown, in this exact format:
 {
   "sentiment": "positive" | "neutral" | "negative",
+  "sentimentScore": <number between -1.0 and 1.0>,
   "risks": ["risk1", "risk2"],
   "themes": ["theme1", "theme2"],
   "metrics": {}
 }
 
 Guidelines:
-- sentiment: overall tone of the note (positive = opportunity/progress, negative = concerns/issues, neutral = factual/mixed)
+- sentiment: overall tone (positive = opportunity/progress, negative = concerns/issues, neutral = factual/mixed)
+- sentimentScore: precise score where -1.0 = extremely negative, 0.0 = perfectly neutral, 1.0 = extremely positive. Must be consistent with the sentiment label (positive → 0.1 to 1.0, neutral → -0.1 to 0.1, negative → -1.0 to -0.1)
 - risks: specific risks or concerns mentioned (max 5)
 - themes: key investment themes or topics (max 5)
 - metrics: any specific numbers mentioned (e.g. { "revenue": "$10M", "growth": "15%" })`;
@@ -47,6 +49,13 @@ Guidelines:
       metrics: parsed.metrics ?? {},
     });
 
+    const sentimentScore =
+      typeof parsed.sentimentScore === "number" &&
+      parsed.sentimentScore >= -1 &&
+      parsed.sentimentScore <= 1
+        ? parsed.sentimentScore
+        : null;
+
     // Upsert AI result
     const existing = await db.query.noteAiResults.findFirst({
       where: eq(noteAiResults.noteId, noteId),
@@ -55,6 +64,7 @@ Guidelines:
     if (existing) {
       await db.update(noteAiResults).set({
         sentiment: parsed.sentiment ?? "neutral",
+        sentimentScore,
         keyExtraction,
         generatedAt: new Date(),
       }).where(eq(noteAiResults.noteId, noteId));
@@ -62,12 +72,13 @@ Guidelines:
       await db.insert(noteAiResults).values({
         noteId,
         sentiment: parsed.sentiment ?? "neutral",
+        sentimentScore,
         keyExtraction,
         source: "ai",
       });
     }
 
-    logger.info({ noteId, sentiment: parsed.sentiment }, "AI processing complete");
+    logger.info({ noteId, sentiment: parsed.sentiment, sentimentScore }, "AI processing complete");
   } catch (err) {
     logger.warn({ err, noteId }, "AI processing failed — skipping");
   }
