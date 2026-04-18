@@ -10,6 +10,7 @@ import { SentimentBadge } from "@/components/badges";
 import { toast } from "sonner";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger, DrawerDescription } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, onCollapse: () => void }) {
   const [isEditing, setIsEditing] = useState(false);
