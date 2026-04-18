@@ -270,6 +270,11 @@ The database has six tables. Here is each one, what it stores, and why it was de
 
 **Why:** The two types (`pipeline` vs `portfolio`) drive different behaviour across the app. Quarterly summaries are only for portfolio companies (you've already invested). Pipeline companies are tracked during evaluation. The `status` field lets the team mark companies as exited or dropped without deleting them — preserving the historical note record.
 
+**Note — Slowly Changing Dimensions not implemented:**
+In data warehousing, a Slowly Changing Dimension (SCD) is a pattern for tracking how a dimension record's attributes change over time. For example, a company's `type` can change — it starts as `pipeline` and later becomes `portfolio` once the investment closes. A full SCD Type 2 implementation would keep a history of these changes, with effective date ranges, so you could query "what type was this company at the time this note was written?"
+
+This was intentionally not implemented here. For an internal notes tool used by a small team, the overhead of SCD — surrogate keys, `valid_from` / `valid_to` timestamps, "current record" flags, and the query complexity that comes with all of it — is overkill. The `status` field (`active`, `exited`, `dropped`) provides enough historical context for the app's purposes. If this were a reporting system or data warehouse feeding downstream analytics, SCD Type 2 on the company dimension would be the right call.
+
 ---
 
 ### `notes`
