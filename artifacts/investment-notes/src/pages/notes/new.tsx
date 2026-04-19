@@ -215,36 +215,32 @@ export default function NewNotePage() {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="stageAtTimeOfNote"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Deal Stage{" "}
-                    {isGeneric && <span className="text-muted-foreground font-normal">(Not applicable)</span>}
-                    {isPortfolio && <span className="text-muted-foreground font-normal ml-1">— locked to Closed</span>}
-                  </FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value || undefined}
-                    disabled={isGeneric || isPortfolio}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={isGeneric ? "Not applicable" : isPortfolio ? "Closed" : "Select stage"} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {isPipeline && <SelectItem value="initial">Initial</SelectItem>}
-                      {isPipeline && <SelectItem value="final">Final</SelectItem>}
-                      {isPortfolio && <SelectItem value="closed">Closed</SelectItem>}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {isPipeline && (
+              <FormField
+                control={form.control}
+                name="stageAtTimeOfNote"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Deal Stage</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value || undefined}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select stage" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="initial">Initial</SelectItem>
+                        <SelectItem value="final">Final</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             
             {activeUser?.role === "director" && (
               <FormField
