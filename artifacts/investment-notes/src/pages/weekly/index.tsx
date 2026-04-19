@@ -178,13 +178,37 @@ export default function WeeklyPage() {
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-8 pb-12">
-      {/* Header — title + primary filters */}
+      {/* Header — title + group-by switcher */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-5">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Weekly Agenda</h1>
           <p className="text-muted-foreground text-sm mt-1">Highlighted intelligence from the past 7 days flagged for discussion.</p>
         </div>
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-1 bg-muted rounded-md p-1 border border-border">
+          <Button
+            variant={groupBy === "category" ? "secondary" : "ghost"}
+            size="sm"
+            className="h-7 px-3 text-xs gap-1.5"
+            onClick={() => setGroupBy("category")}
+          >
+            <LayoutList className="h-3.5 w-3.5" />
+            Category
+          </Button>
+          <Button
+            variant={groupBy === "user" ? "secondary" : "ghost"}
+            size="sm"
+            className="h-7 px-3 text-xs gap-1.5"
+            onClick={() => setGroupBy("user")}
+          >
+            <User className="h-3.5 w-3.5" />
+            User
+          </Button>
+        </div>
+      </div>
+
+      {/* Secondary toolbar — filters + date */}
+      <div className="flex items-center justify-between gap-3 flex-wrap -mt-4">
+        <div className="flex items-center gap-2 flex-wrap">
           <Select value={filterCategory} onValueChange={setFilterCategory}>
             <SelectTrigger className="w-[145px] h-9 text-sm bg-card border-border shadow-none">
               <SelectValue placeholder="All Categories" />
@@ -208,12 +232,7 @@ export default function WeeklyPage() {
               ))}
             </SelectContent>
           </Select>
-        </div>
-      </div>
 
-      {/* Secondary toolbar — view options + date */}
-      <div className="flex items-center justify-between gap-3 flex-wrap -mt-4">
-        <div className="flex items-center gap-2 flex-wrap">
           {negativeNotes.length > 0 && (
             <Button
               variant={showNegativeOnly ? "destructive" : "outline"}
@@ -225,26 +244,6 @@ export default function WeeklyPage() {
               {showNegativeOnly ? "Showing negative only" : `Needs Attention (${negativeNotes.length})`}
             </Button>
           )}
-          <div className="flex items-center gap-1 bg-muted rounded-md p-1 border border-border">
-            <Button
-              variant={groupBy === "category" ? "secondary" : "ghost"}
-              size="sm"
-              className="h-7 px-3 text-xs gap-1.5"
-              onClick={() => setGroupBy("category")}
-            >
-              <LayoutList className="h-3.5 w-3.5" />
-              Category
-            </Button>
-            <Button
-              variant={groupBy === "user" ? "secondary" : "ghost"}
-              size="sm"
-              className="h-7 px-3 text-xs gap-1.5"
-              onClick={() => setGroupBy("user")}
-            >
-              <User className="h-3.5 w-3.5" />
-              User
-            </Button>
-          </div>
         </div>
         <div className="flex flex-col items-end gap-1">
           <input
