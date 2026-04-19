@@ -6,10 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil } from "lucide-react";
 import { CategoryBadge } from "@/components/badges";
+
+const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secondary" | "outline" }> = {
+  active:  { label: "Active",  variant: "default" },
+  exited:  { label: "Exited",  variant: "secondary" },
+  dropped: { label: "Dropped", variant: "outline" },
+};
 
 type CompanyFormValues = {
   name: string;
@@ -155,6 +162,7 @@ export default function CompaniesPage() {
               <tr className="border-b border-border bg-muted/30">
                 <th className="py-2.5 px-4 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Name</th>
                 <th className="py-2.5 px-4 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Category</th>
+                <th className="py-2.5 px-4 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
                 <th className="py-2.5 px-4" />
               </tr>
             </thead>
@@ -164,6 +172,9 @@ export default function CompaniesPage() {
                   <td className="py-3 px-4 text-sm font-medium text-foreground">{c.name}</td>
                   <td className="py-3 px-4">
                     <CategoryBadge category={c.type} />
+                  </td>
+                  <td className="py-3 px-4">
+                    {(() => { const s = STATUS_CONFIG[c.status] ?? { label: c.status, variant: "outline" as const }; return <Badge variant={s.variant}>{s.label}</Badge>; })()}
                   </td>
                   <td className="py-3 px-4 text-right">
                     <Button
