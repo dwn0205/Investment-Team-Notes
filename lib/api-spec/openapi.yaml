@@ -529,6 +529,13 @@ components:
       properties:
         content:
           type: string
+        category:
+          type: string
+          enum: [generic, pipeline, portfolio]
+          nullable: true
+        companyId:
+          type: string
+          nullable: true
         stageAtTimeOfNote:
           type: string
           enum: [initial, final, closed]

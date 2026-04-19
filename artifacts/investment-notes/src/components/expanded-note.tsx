@@ -1,12 +1,13 @@
 import { NoteWithDetails } from "@workspace/api-client-react";
 import { format } from "date-fns";
-import { useGetNoteAiResult, useRerunNoteAi, useUpdateNote, useDeleteNote, getGetNoteQueryKey, getListNotesQueryKey, getGetNoteAiResultQueryKey, useGetNoteVersions } from "@workspace/api-client-react";
+import { useGetNoteAiResult, useRerunNoteAi, useUpdateNote, useDeleteNote, getGetNoteQueryKey, getListNotesQueryKey, getGetNoteAiResultQueryKey, useGetNoteVersions, useListCompanies } from "@workspace/api-client-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useState, useEffect } from "react";
 import { useActiveUser } from "@/contexts/user-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sparkles, History, RefreshCw, AlertTriangle, TrendingUp, Check, X, Clock, User as UserIcon, CalendarCheck, Trash2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -22,9 +23,18 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
   const [content, setContent] = useState(note.content);
   const [editReason, setEditReason] = useState("");
   const [includeInWeekly, setIncludeInWeekly] = useState(note.includeInWeekly);
-  
+  const [category, setCategory] = useState<string>(note.category ?? "generic");
+  const [companyId, setCompanyId] = useState<string | null>(note.companyId ?? null);
+
   const { activeUser } = useActiveUser();
   const queryClient = useQueryClient();
+  const { data: companies } = useListCompanies();
+
+  const filteredCompanies = companies?.filter(c => {
+    if (c.status === "dropped") return false;
+    if (category === "generic") return true;
+    return c.type === category;
+  });
   const updateNote = useUpdateNote();
   const deleteNote = useDeleteNote();
   const rerunAi = useRerunNoteAi();
@@ -46,7 +56,7 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
 
   const handleSave = () => {
     if (!content.trim()) return;
-    updateNote.mutate({ id: note.id, data: { content, includeInWeekly, editReason: editReason || "General update", editedByUserId: activeUser?.id } }, {
+    updateNote.mutate({ id: note.id, data: { content, category, companyId: companyId ?? undefined, includeInWeekly, editReason: editReason || "General update", editedByUserId: activeUser?.id } }, {
       onSuccess: () => {
         toast.success("Note updated successfully");
         setIsEditing(false);
@@ -173,7 +183,7 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
                     <UserIcon className="h-3 w-3" /> {activeUser.fullName}
                   </span>
                 )}
-                <Button variant="ghost" size="sm" onClick={() => { setIsEditing(false); setContent(note.content); setIncludeInWeekly(note.includeInWeekly); }}>Cancel</Button>
+                <Button variant="ghost" size="sm" onClick={() => { setIsEditing(false); setContent(note.content); setIncludeInWeekly(note.includeInWeekly); setCategory(note.category ?? "generic"); setCompanyId(note.companyId ?? null); }}>Cancel</Button>
                 <Button size="sm" onClick={handleSave} disabled={updateNote.isPending || !content.trim()}>
                   {updateNote.isPending ? <RefreshCw className="h-3 w-3 mr-2 animate-spin" /> : <Check className="h-3 w-3 mr-2" />}
                   Save
@@ -191,6 +201,39 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
               onChange={e => setContent(e.target.value)}
               className="flex-1 min-h-[200px] resize-none font-mono text-sm leading-relaxed p-4 bg-background border-input focus-visible:ring-1"
             />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Category</Label>
+                <Select value={category} onValueChange={(v) => { setCategory(v); setCompanyId(null); }}>
+                  <SelectTrigger className="bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pipeline">Pipeline</SelectItem>
+                    <SelectItem value="portfolio">Portfolio</SelectItem>
+                    <SelectItem value="generic">Generic</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Company</Label>
+                <Select
+                  value={companyId ?? "__none__"}
+                  onValueChange={(v) => setCompanyId(v === "__none__" ? null : v)}
+                  disabled={category === "generic"}
+                >
+                  <SelectTrigger className="bg-background">
+                    <SelectValue placeholder={category === "generic" ? "N/A" : "Select company"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {category === "generic" && <SelectItem value="__none__">Not applicable</SelectItem>}
+                    {filteredCompanies?.map(c => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             <Input 
               placeholder="Reason for edit (optional)" 
               value={editReason}

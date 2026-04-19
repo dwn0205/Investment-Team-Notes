@@ -186,6 +186,16 @@ export interface CreateNoteBody {
   includeInWeekly: boolean;
 }
 
+export type UpdateNoteBodyCategory =
+  | (typeof UpdateNoteBodyCategory)[keyof typeof UpdateNoteBodyCategory]
+  | null;
+
+export const UpdateNoteBodyCategory = {
+  generic: "generic",
+  pipeline: "pipeline",
+  portfolio: "portfolio",
+} as const;
+
 export type UpdateNoteBodyStageAtTimeOfNote =
   | (typeof UpdateNoteBodyStageAtTimeOfNote)[keyof typeof UpdateNoteBodyStageAtTimeOfNote]
   | null;
@@ -198,6 +208,8 @@ export const UpdateNoteBodyStageAtTimeOfNote = {
 
 export interface UpdateNoteBody {
   content?: string;
+  category?: UpdateNoteBodyCategory;
+  companyId?: string | null;
   stageAtTimeOfNote?: UpdateNoteBodyStageAtTimeOfNote;
   includeInWeekly?: boolean;
   editReason?: string | null;

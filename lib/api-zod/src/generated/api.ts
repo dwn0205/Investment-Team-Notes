@@ -201,6 +201,8 @@ export const UpdateNoteParams = zod.object({
 
 export const UpdateNoteBody = zod.object({
   content: zod.string().optional(),
+  category: zod.enum(["generic", "pipeline", "portfolio"]).nullish(),
+  companyId: zod.string().nullish(),
   stageAtTimeOfNote: zod.enum(["initial", "final", "closed"]).nullish(),
   includeInWeekly: zod.boolean().optional(),
   editReason: zod.string().nullish(),

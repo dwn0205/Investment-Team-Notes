@@ -158,7 +158,7 @@ router.put("/:id", async (req, res) => {
       return;
     }
 
-    const { content, stageAtTimeOfNote, includeInWeekly, editReason, editedByUserId } = parsed.data;
+    const { content, category, companyId, stageAtTimeOfNote, includeInWeekly, editReason, editedByUserId } = parsed.data;
     const contentChanged = content !== undefined && content !== existing.content;
 
     if (contentChanged) {
@@ -175,6 +175,17 @@ router.put("/:id", async (req, res) => {
 
     const updateFields: any = { updatedAt: new Date() };
     if (content !== undefined) updateFields.content = content;
+    if (category !== undefined && category !== null) {
+      updateFields.category = category;
+      // Portfolio notes must always have stage = closed
+      if (category === "portfolio") {
+        updateFields.stageAtTimeOfNote = "closed";
+      } else if (existing.category === "portfolio") {
+        // Switching away from portfolio — clear the forced stage
+        updateFields.stageAtTimeOfNote = null;
+      }
+    }
+    if (companyId !== undefined) updateFields.companyId = companyId ?? null;
     if (stageAtTimeOfNote !== undefined) updateFields.stageAtTimeOfNote = stageAtTimeOfNote ?? null;
     if (includeInWeekly !== undefined) updateFields.includeInWeekly = includeInWeekly;
     if (contentChanged) {
