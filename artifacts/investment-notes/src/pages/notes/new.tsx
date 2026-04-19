@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
-import { useCreateNote, useListCompanies, useListUsers, CreateNoteBodyCategory, CreateNoteBodyStageAtTimeOfNote } from "@workspace/api-client-react";
+import { useCreateNote, useListCompanies, CreateNoteBodyCategory, CreateNoteBodyStageAtTimeOfNote } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -47,7 +47,6 @@ export default function NewNotePage() {
   const { activeUser } = useActiveUser();
   const createNote = useCreateNote();
   const { data: companies } = useListCompanies();
-  const { data: users } = useListUsers();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -122,28 +121,12 @@ export default function NewNotePage() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-card p-6 border border-card-border rounded-lg shadow-sm">
-            <FormField
-              control={form.control}
-              name="userId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Author</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select author" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {users?.map(u => (
-                        <SelectItem key={u.id} value={u.id}>{u.fullName}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium leading-none">Author</label>
+                <div className="h-9 px-3 flex items-center rounded-md border border-border bg-muted/40 text-sm text-foreground">
+                  {activeUser?.fullName ?? "—"}
+                </div>
+              </div>
 
             <FormField
               control={form.control}
@@ -262,26 +245,28 @@ export default function NewNotePage() {
               )}
             />
             
-            <FormField
-              control={form.control}
-              name="includeInWeekly"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border border-border p-3 shadow-sm mt-8">
-                  <div className="space-y-0.5">
-                    <FormLabel>Include in Weekly Agenda</FormLabel>
-                    <div className="text-xs text-muted-foreground">
-                      Flag this note for Monday morning discussion
+            {activeUser?.role === "director" && (
+              <FormField
+                control={form.control}
+                name="includeInWeekly"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border border-border p-3 shadow-sm mt-8">
+                    <div className="space-y-0.5">
+                      <FormLabel>Include in Weekly Agenda</FormLabel>
+                      <div className="text-xs text-muted-foreground">
+                        Flag this note for Monday morning discussion
+                      </div>
                     </div>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            )}
           </div>
 
           <div className="bg-card p-6 border border-card-border rounded-lg shadow-sm">
