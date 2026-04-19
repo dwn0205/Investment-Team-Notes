@@ -92,10 +92,16 @@ export default function WeeklyPage() {
         if (!map.has(key)) map.set(key, []);
         map.get(key)!.push(note);
       }
+      const byDate = (a: typeof displayNotes[0], b: typeof displayNotes[0]) =>
+        new Date(b.noteDate).getTime() - new Date(a.noteDate).getTime();
+
       return order
         .filter((k) => map.has(k))
-        .map((k) => ({ key: k, label: CATEGORY_LABELS[k] ?? k, notes: map.get(k)! }));
+        .map((k) => ({ key: k, label: CATEGORY_LABELS[k] ?? k, notes: map.get(k)!.sort(byDate) }));
     } else {
+      const byDate = (a: typeof displayNotes[0], b: typeof displayNotes[0]) =>
+        new Date(b.noteDate).getTime() - new Date(a.noteDate).getTime();
+
       const map = new Map<string, typeof displayNotes>();
       for (const note of displayNotes) {
         const key = note.user?.id ?? "unknown";
@@ -106,7 +112,7 @@ export default function WeeklyPage() {
         key: notes[0].user?.id ?? "unknown",
         label: notes[0].user?.fullName ?? "Unknown",
         sublabel: notes[0].user?.role,
-        notes,
+        notes: notes.sort(byDate),
       }));
     }
   }, [displayNotes, groupBy]);
