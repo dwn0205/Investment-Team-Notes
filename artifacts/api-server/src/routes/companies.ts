@@ -34,24 +34,22 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   const { name, type, status } = req.body;
   try {
-    const existing = await db.query.companies.findFirst({
-      where: eq(companies.id, req.params.id),
-    });
-    if (!existing) {
-      res.status(404).json({ error: "Company not found" });
-      return;
-    }
-    const updateFields: any = {};
+    const updateFields: Record<string, unknown> = {};
     if (name !== undefined) updateFields.name = name;
     if (type !== undefined) updateFields.type = type;
     if (status !== undefined) updateFields.status = status;
 
-    const [updated] = await db
+    const result = await db
       .update(companies)
       .set(updateFields)
       .where(eq(companies.id, req.params.id))
       .returning();
-    res.json(updated);
+
+    if (result.length === 0) {
+      res.status(404).json({ error: "Company not found" });
+      return;
+    }
+    res.json(result[0]);
   } catch (err) {
     req.log.error({ err }, "Failed to update company");
     res.status(500).json({ error: "Failed to update company" });
