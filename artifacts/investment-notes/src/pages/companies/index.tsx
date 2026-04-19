@@ -193,10 +193,10 @@ export default function CompaniesPage() {
   });
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-6">
-      <div className="flex items-start justify-between">
+    <div className="max-w-[1400px] mx-auto space-y-6 pb-12">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-5">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Companies</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Companies</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Manage pipeline and portfolio companies tracked in the notes app.
           </p>

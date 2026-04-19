@@ -41,13 +41,15 @@ export default function NotesPage() {
     : null;
 
   return (
-    <div className="space-y-5 max-w-[1400px] mx-auto">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">All Notes</h1>
-        <p className="text-muted-foreground text-sm mt-1">Review your recent deal activity and thoughts.</p>
+    <div className="max-w-[1400px] mx-auto space-y-6 pb-12">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-5">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">All Notes</h1>
+          <p className="text-muted-foreground text-sm mt-1">Review your recent deal activity and thoughts.</p>
+        </div>
       </div>
 
-      <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex items-center gap-3 flex-wrap -mt-2">
         <div className="relative w-72">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input

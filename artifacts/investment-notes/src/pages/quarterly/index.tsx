@@ -98,7 +98,7 @@ export default function QuarterlyPage() {
   return (
     <div className="max-w-[1400px] mx-auto space-y-6 pb-12">
       {/* Header */}
-      <div className="border-b border-border pb-6">
+      <div className="border-b border-border pb-5">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Quarterly Portfolio View</h1>
         <p className="text-muted-foreground text-sm mt-1">
           Synthesized intelligence per company and quarter. Portfolio companies only.
