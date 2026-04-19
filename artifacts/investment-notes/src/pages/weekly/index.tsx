@@ -2,7 +2,7 @@ import { useGetWeeklyAgenda } from "@workspace/api-client-react";
 import { format, subDays } from "date-fns";
 import { SentimentBadge, RoleBadge } from "@/components/badges";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CalendarX2, Hash, LayoutList, User, FileText, Building2, AlertTriangle, TrendingUp, ShieldAlert } from "lucide-react";
+import { CalendarX2, Hash, LayoutList, User, FileText, Building2, AlertTriangle, TrendingUp } from "lucide-react";
 import { ExpandedNoteView } from "@/components/expanded-note";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ export default function WeeklyPage() {
   const { data: agendaGroups, isLoading } = useGetWeeklyAgenda({ asOf });
   const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
   const [groupBy, setGroupBy] = useState<GroupBy>("category");
-  const [showNegativeOnly, setShowNegativeOnly] = useState(false);
+  const [filterSentiment, setFilterSentiment] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterUserId, setFilterUserId] = useState("all");
 
@@ -44,8 +44,9 @@ export default function WeeklyPage() {
 
   const filteredNotes = useMemo(() => allNotes
     .filter(n => filterCategory === "all" || n.category === filterCategory)
-    .filter(n => filterUserId === "all" || n.user?.id === filterUserId),
-    [allNotes, filterCategory, filterUserId]
+    .filter(n => filterUserId === "all" || n.user?.id === filterUserId)
+    .filter(n => filterSentiment === "all" || n.aiResult?.sentiment === filterSentiment),
+    [allNotes, filterCategory, filterUserId, filterSentiment]
   );
 
   const stats = useMemo(() => {
@@ -93,39 +94,29 @@ export default function WeeklyPage() {
     return risks;
   }, [allNotes]);
 
-  const negativeNotes = useMemo(
-    () => filteredNotes.filter((n) => n.aiResult?.sentiment === "negative"),
-    [filteredNotes]
-  );
-
-  const displayNotes = useMemo(
-    () => (showNegativeOnly ? negativeNotes : filteredNotes),
-    [filteredNotes, negativeNotes, showNegativeOnly]
-  );
-
   const groups = useMemo(() => {
-    if (!displayNotes.length) return [];
+    if (!filteredNotes.length) return [];
 
     if (groupBy === "category") {
       const order = ["pipeline", "portfolio", "generic"];
-      const map = new Map<string, typeof displayNotes>();
-      for (const note of displayNotes) {
+      const map = new Map<string, typeof filteredNotes>();
+      for (const note of filteredNotes) {
         const key = note.category ?? "generic";
         if (!map.has(key)) map.set(key, []);
         map.get(key)!.push(note);
       }
-      const byDate = (a: typeof displayNotes[0], b: typeof displayNotes[0]) =>
+      const byDate = (a: typeof filteredNotes[0], b: typeof filteredNotes[0]) =>
         new Date(b.noteDate).getTime() - new Date(a.noteDate).getTime();
 
       return order
         .filter((k) => map.has(k))
         .map((k) => ({ key: k, label: CATEGORY_LABELS[k] ?? k, notes: map.get(k)!.sort(byDate) }));
     } else {
-      const byDate = (a: typeof displayNotes[0], b: typeof displayNotes[0]) =>
+      const byDate = (a: typeof filteredNotes[0], b: typeof filteredNotes[0]) =>
         new Date(b.noteDate).getTime() - new Date(a.noteDate).getTime();
 
-      const map = new Map<string, typeof displayNotes>();
-      for (const note of displayNotes) {
+      const map = new Map<string, typeof filteredNotes>();
+      for (const note of filteredNotes) {
         const key = note.user?.id ?? "unknown";
         if (!map.has(key)) map.set(key, []);
         map.get(key)!.push(note);
@@ -137,7 +128,7 @@ export default function WeeklyPage() {
         notes: notes.sort(byDate),
       }));
     }
-  }, [displayNotes, groupBy]);
+  }, [filteredNotes, groupBy]);
 
   const NoteCard = ({ note }: { note: typeof allNotes[0] }) => (
     <div key={note.id} className={`border rounded-lg shadow-sm overflow-hidden flex flex-col ${
@@ -233,17 +224,17 @@ export default function WeeklyPage() {
             </SelectContent>
           </Select>
 
-          {negativeNotes.length > 0 && (
-            <Button
-              variant={showNegativeOnly ? "destructive" : "outline"}
-              size="sm"
-              className="h-8 px-3 text-xs gap-1.5"
-              onClick={() => setShowNegativeOnly((v) => !v)}
-            >
-              <ShieldAlert className="h-3.5 w-3.5" />
-              {showNegativeOnly ? "Showing negative only" : `Needs Attention (${negativeNotes.length})`}
-            </Button>
-          )}
+          <Select value={filterSentiment} onValueChange={setFilterSentiment}>
+            <SelectTrigger className="w-[145px] h-9 text-sm bg-card border-border shadow-none">
+              <SelectValue placeholder="All Sentiments" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Sentiments</SelectItem>
+              <SelectItem value="positive">Positive</SelectItem>
+              <SelectItem value="neutral">Neutral</SelectItem>
+              <SelectItem value="negative">Negative</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex flex-col items-end gap-1">
           <input
