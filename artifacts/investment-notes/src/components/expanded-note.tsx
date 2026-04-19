@@ -242,9 +242,14 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Sentiment</h4>
               <SentimentBadge sentiment={aiResult.sentiment} />
+              {aiResult.sentimentScore != null && (
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  Score: <span className="font-medium text-foreground">{aiResult.sentimentScore.toFixed(2)}</span>
+                </p>
+              )}
             </div>
 
-            {aiResult.keyExtraction.risks && aiResult.keyExtraction.risks.length > 0 && (
+            {!isEditing && aiResult.keyExtraction.risks && aiResult.keyExtraction.risks.length > 0 && (
               <div>
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
                   <AlertTriangle className="h-3.5 w-3.5" /> Key Risks
@@ -259,7 +264,7 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
               </div>
             )}
 
-            {aiResult.keyExtraction.developments && aiResult.keyExtraction.developments.length > 0 && (
+            {!isEditing && aiResult.keyExtraction.developments && aiResult.keyExtraction.developments.length > 0 && (
               <div>
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
                   <TrendingUp className="h-3.5 w-3.5" /> Developments
