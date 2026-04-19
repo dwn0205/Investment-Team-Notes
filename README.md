@@ -290,7 +290,7 @@ This was intentionally not implemented here. For an internal notes tool used by 
 | `note_date` | timestamp | When the activity/observation occurred (not when it was entered) |
 | `include_in_weekly` | boolean | Whether this note surfaces in the weekly agenda |
 | `is_deleted` | boolean | Soft delete — records are never physically removed |
-| `version_count` | integer | How many times the content has been edited |
+| `version_count` | integer | How many times the note has been edited (content, category, or company) |
 | `created_at` / `updated_at` | timestamp | Record timestamps |
 
 **Why this design:**
