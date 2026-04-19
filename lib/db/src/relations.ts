@@ -23,6 +23,7 @@ export const notesRelations = relations(notes, ({ one, many }) => ({
 export const noteVersionsRelations = relations(noteVersions, ({ one }) => ({
   note: one(notes, { fields: [noteVersions.noteId], references: [notes.id] }),
   user: one(users, { fields: [noteVersions.userId], references: [users.id] }),
+  company: one(companies, { fields: [noteVersions.companyIdSnapshot], references: [companies.id] }),
 }));
 
 export const noteAiResultsRelations = relations(noteAiResults, ({ one }) => ({

@@ -104,7 +104,7 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
                       {versions?.map((v, i) => (
                         <div key={v.id} className="relative pl-6 pb-6 border-l border-border last:border-0 last:pb-0">
                           <div className="absolute left-[-5px] top-0 h-2.5 w-2.5 rounded-full bg-primary ring-4 ring-background" />
-                          <div className="flex items-center gap-2 mb-2">
+                          <div className="flex items-center flex-wrap gap-2 mb-2">
                             <span className="font-medium text-sm">v{versions.length - i}</span>
                             <span className="text-xs text-muted-foreground flex items-center gap-1">
                               <Clock className="h-3 w-3" />
@@ -114,6 +114,16 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
                               <UserIcon className="h-3 w-3 ml-2" />
                               {v.user?.fullName}
                             </span>
+                            {v.categorySnapshot && (
+                              <span className="text-xs px-1.5 py-0.5 rounded bg-muted border border-border capitalize">
+                                {v.categorySnapshot}
+                              </span>
+                            )}
+                            {v.companyName && (
+                              <span className="text-xs px-1.5 py-0.5 rounded bg-muted border border-border">
+                                {v.companyName}
+                              </span>
+                            )}
                           </div>
                           {v.editReason && (
                             <p className="text-xs font-medium text-primary mb-2">Reason: {v.editReason}</p>

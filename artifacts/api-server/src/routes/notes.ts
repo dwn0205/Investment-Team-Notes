@@ -166,6 +166,8 @@ router.put("/:id", async (req, res) => {
       await db.insert(noteVersions).values({
         noteId: existing.id,
         contentSnapshot: existing.content,
+        categorySnapshot: existing.category ?? null,
+        companyIdSnapshot: existing.companyId ?? null,
         userId: existing.userId,
         editReason: editReason ?? null,
       });
@@ -215,7 +217,7 @@ router.get("/:id/versions", async (req, res) => {
   try {
     const versions = await db.query.noteVersions.findMany({
       where: eq(noteVersions.noteId, req.params.id),
-      with: { user: true },
+      with: { user: true, company: true },
       orderBy: [desc(noteVersions.createdAt)],
     });
 
@@ -223,6 +225,7 @@ router.get("/:id/versions", async (req, res) => {
       ...v,
       createdAt: v.createdAt?.toISOString() ?? null,
       user: v.user ? { ...v.user, createdAt: v.user.createdAt?.toISOString() ?? null } : null,
+      companyName: v.company?.name ?? null,
     })));
   } catch (err) {
     req.log.error({ err }, "Failed to get note versions");

@@ -207,6 +207,9 @@ export interface NoteVersion {
   id: string;
   noteId: string;
   contentSnapshot: string;
+  categorySnapshot?: string | null;
+  companyIdSnapshot?: string | null;
+  companyName?: string | null;
   userId: string;
   editReason?: string | null;
   createdAt: string;

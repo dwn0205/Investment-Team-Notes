@@ -38,6 +38,8 @@ export const noteVersions = pgTable("note_versions", {
   id: uuid("id").primaryKey().defaultRandom(),
   noteId: uuid("note_id").notNull().references(() => notes.id),
   contentSnapshot: text("content_snapshot").notNull(),
+  categorySnapshot: noteCategoryEnum("category_snapshot"),
+  companyIdSnapshot: uuid("company_id_snapshot").references(() => companies.id),
   userId: uuid("user_id").notNull().references(() => users.id),
   editReason: text("edit_reason"),
   createdAt: timestamp("created_at").notNull().defaultNow(),

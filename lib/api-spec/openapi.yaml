@@ -549,6 +549,15 @@ components:
           type: string
         contentSnapshot:
           type: string
+        categorySnapshot:
+          type: string
+          nullable: true
+        companyIdSnapshot:
+          type: string
+          nullable: true
+        companyName:
+          type: string
+          nullable: true
         userId:
           type: string
         editReason:
