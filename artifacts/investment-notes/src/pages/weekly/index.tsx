@@ -76,7 +76,7 @@ export default function WeeklyPage() {
   const keyRisks = useMemo(() => {
     const seen = new Set<string>();
     const risks: { risk: string; company: string | null }[] = [];
-    const sorted = [...allNotes].sort(
+    const sorted = [...filteredNotes].sort(
       (a, b) => (a.aiResult?.sentimentScore ?? 0) - (b.aiResult?.sentimentScore ?? 0)
     );
     for (const note of sorted) {
@@ -92,7 +92,7 @@ export default function WeeklyPage() {
       if (risks.length >= 5) break;
     }
     return risks;
-  }, [allNotes]);
+  }, [filteredNotes]);
 
   const groups = useMemo(() => {
     if (!filteredNotes.length) return [];
