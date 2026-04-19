@@ -249,35 +249,6 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
               )}
             </div>
 
-            {!isEditing && aiResult.keyExtraction.risks && aiResult.keyExtraction.risks.length > 0 && (
-              <div>
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
-                  <AlertTriangle className="h-3.5 w-3.5" /> Key Risks
-                </h4>
-                <ul className="space-y-2">
-                  {aiResult.keyExtraction.risks.map((risk, i) => (
-                    <li key={i} className="text-sm p-2 rounded bg-red-50 text-red-700 border border-red-200 leading-snug">
-                      {risk}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {!isEditing && aiResult.keyExtraction.developments && aiResult.keyExtraction.developments.length > 0 && (
-              <div>
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
-                  <TrendingUp className="h-3.5 w-3.5" /> Developments
-                </h4>
-                <ul className="space-y-2">
-                  {aiResult.keyExtraction.developments.map((dev, i) => (
-                    <li key={i} className="text-sm p-2 rounded bg-blue-50 text-blue-700 border border-blue-200 leading-snug">
-                      {dev}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
 
           </div>
         ) : (
