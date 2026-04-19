@@ -21,6 +21,7 @@ import type {
   CreateCompanyBody,
   CreateNoteBody,
   ErrorResponse,
+  GetWeeklyAgendaParams,
   HealthStatus,
   ListNotesParams,
   NoteAiResult,
@@ -1034,41 +1035,57 @@ export const useRerunNoteAi = <
 /**
  * @summary Get weekly agenda (last 7 days, includeInWeekly=true)
  */
-export const getGetWeeklyAgendaUrl = () => {
-  return `/api/weekly`;
+export const getGetWeeklyAgendaUrl = (params?: GetWeeklyAgendaParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/weekly?${stringifiedParams}`
+    : `/api/weekly`;
 };
 
 export const getWeeklyAgenda = async (
+  params?: GetWeeklyAgendaParams,
   options?: RequestInit,
 ): Promise<WeeklyGroup[]> => {
-  return customFetch<WeeklyGroup[]>(getGetWeeklyAgendaUrl(), {
+  return customFetch<WeeklyGroup[]>(getGetWeeklyAgendaUrl(params), {
     ...options,
     method: "GET",
   });
 };
 
-export const getGetWeeklyAgendaQueryKey = () => {
-  return [`/api/weekly`] as const;
+export const getGetWeeklyAgendaQueryKey = (params?: GetWeeklyAgendaParams) => {
+  return [`/api/weekly`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetWeeklyAgendaQueryOptions = <
   TData = Awaited<ReturnType<typeof getWeeklyAgenda>>,
   TError = ErrorType<unknown>,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getWeeklyAgenda>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}) => {
+>(
+  params?: GetWeeklyAgendaParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getWeeklyAgenda>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetWeeklyAgendaQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getGetWeeklyAgendaQueryKey(params);
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getWeeklyAgenda>>> = ({
     signal,
-  }) => getWeeklyAgenda({ signal, ...requestOptions });
+  }) => getWeeklyAgenda(params, { signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getWeeklyAgenda>>,
@@ -1089,15 +1106,18 @@ export type GetWeeklyAgendaQueryError = ErrorType<unknown>;
 export function useGetWeeklyAgenda<
   TData = Awaited<ReturnType<typeof getWeeklyAgenda>>,
   TError = ErrorType<unknown>,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getWeeklyAgenda>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getGetWeeklyAgendaQueryOptions(options);
+>(
+  params?: GetWeeklyAgendaParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getWeeklyAgenda>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetWeeklyAgendaQueryOptions(params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

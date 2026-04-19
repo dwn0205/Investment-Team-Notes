@@ -59,6 +59,9 @@ export const ListNotesQueryParams = zod.object({
   authorId: zod.coerce.string().optional(),
 });
 
+export const listNotesResponseAiResultSentimentScoreMin = -1;
+export const listNotesResponseAiResultSentimentScoreMax = 1;
+
 export const ListNotesResponseItem = zod.object({
   id: zod.string(),
   companyId: zod.string().nullish(),
@@ -95,6 +98,11 @@ export const ListNotesResponseItem = zod.object({
       id: zod.string(),
       noteId: zod.string(),
       sentiment: zod.enum(["positive", "neutral", "negative"]),
+      sentimentScore: zod
+        .number()
+        .min(listNotesResponseAiResultSentimentScoreMin)
+        .max(listNotesResponseAiResultSentimentScoreMax)
+        .nullish(),
       keyExtraction: zod.object({
         risks: zod.array(zod.string()),
         themes: zod.array(zod.string()),
@@ -126,6 +134,9 @@ export const CreateNoteBody = zod.object({
 export const GetNoteParams = zod.object({
   id: zod.coerce.string(),
 });
+
+export const getNoteResponseAiResultSentimentScoreMin = -1;
+export const getNoteResponseAiResultSentimentScoreMax = 1;
 
 export const GetNoteResponse = zod.object({
   id: zod.string(),
@@ -163,6 +174,11 @@ export const GetNoteResponse = zod.object({
       id: zod.string(),
       noteId: zod.string(),
       sentiment: zod.enum(["positive", "neutral", "negative"]),
+      sentimentScore: zod
+        .number()
+        .min(getNoteResponseAiResultSentimentScoreMin)
+        .max(getNoteResponseAiResultSentimentScoreMax)
+        .nullish(),
       keyExtraction: zod.object({
         risks: zod.array(zod.string()),
         themes: zod.array(zod.string()),
@@ -186,8 +202,10 @@ export const UpdateNoteBody = zod.object({
   stageAtTimeOfNote: zod.enum(["initial", "final", "closed"]).nullish(),
   includeInWeekly: zod.boolean().optional(),
   editReason: zod.string().nullish(),
-  editedByUserId: zod.string().optional(),
 });
+
+export const updateNoteResponseAiResultSentimentScoreMin = -1;
+export const updateNoteResponseAiResultSentimentScoreMax = 1;
 
 export const UpdateNoteResponse = zod.object({
   id: zod.string(),
@@ -225,6 +243,11 @@ export const UpdateNoteResponse = zod.object({
       id: zod.string(),
       noteId: zod.string(),
       sentiment: zod.enum(["positive", "neutral", "negative"]),
+      sentimentScore: zod
+        .number()
+        .min(updateNoteResponseAiResultSentimentScoreMin)
+        .max(updateNoteResponseAiResultSentimentScoreMax)
+        .nullish(),
       keyExtraction: zod.object({
         risks: zod.array(zod.string()),
         themes: zod.array(zod.string()),
@@ -281,10 +304,18 @@ export const GetNoteAiResultParams = zod.object({
   id: zod.coerce.string(),
 });
 
+export const getNoteAiResultResponseSentimentScoreMin = -1;
+export const getNoteAiResultResponseSentimentScoreMax = 1;
+
 export const GetNoteAiResultResponse = zod.object({
   id: zod.string(),
   noteId: zod.string(),
   sentiment: zod.enum(["positive", "neutral", "negative"]),
+  sentimentScore: zod
+    .number()
+    .min(getNoteAiResultResponseSentimentScoreMin)
+    .max(getNoteAiResultResponseSentimentScoreMax)
+    .nullish(),
   keyExtraction: zod.object({
     risks: zod.array(zod.string()),
     themes: zod.array(zod.string()),
@@ -304,6 +335,18 @@ export const RerunNoteAiParams = zod.object({
 /**
  * @summary Get weekly agenda (last 7 days, includeInWeekly=true)
  */
+export const GetWeeklyAgendaQueryParams = zod.object({
+  asOf: zod
+    .date()
+    .optional()
+    .describe(
+      "Reference date (ISO yyyy-MM-dd). Returns notes from the 7 days up to and including this date. Defaults to today.",
+    ),
+});
+
+export const getWeeklyAgendaResponseNotesItemAiResultSentimentScoreMin = -1;
+export const getWeeklyAgendaResponseNotesItemAiResultSentimentScoreMax = 1;
+
 export const GetWeeklyAgendaResponseItem = zod.object({
   groupKey: zod.string(),
   category: zod.enum(["generic", "pipeline", "portfolio"]),
@@ -353,6 +396,11 @@ export const GetWeeklyAgendaResponseItem = zod.object({
           id: zod.string(),
           noteId: zod.string(),
           sentiment: zod.enum(["positive", "neutral", "negative"]),
+          sentimentScore: zod
+            .number()
+            .min(getWeeklyAgendaResponseNotesItemAiResultSentimentScoreMin)
+            .max(getWeeklyAgendaResponseNotesItemAiResultSentimentScoreMax)
+            .nullish(),
           keyExtraction: zod.object({
             risks: zod.array(zod.string()),
             themes: zod.array(zod.string()),
@@ -375,6 +423,9 @@ export const GetQuarterlySummaryParams = zod.object({
   year: zod.coerce.number(),
   quarter: zod.coerce.number(),
 });
+
+export const getQuarterlySummaryResponseNotesItemAiResultSentimentScoreMin = -1;
+export const getQuarterlySummaryResponseNotesItemAiResultSentimentScoreMax = 1;
 
 export const GetQuarterlySummaryResponse = zod.object({
   summary: zod
@@ -427,6 +478,11 @@ export const GetQuarterlySummaryResponse = zod.object({
           id: zod.string(),
           noteId: zod.string(),
           sentiment: zod.enum(["positive", "neutral", "negative"]),
+          sentimentScore: zod
+            .number()
+            .min(getQuarterlySummaryResponseNotesItemAiResultSentimentScoreMin)
+            .max(getQuarterlySummaryResponseNotesItemAiResultSentimentScoreMax)
+            .nullish(),
           keyExtraction: zod.object({
             risks: zod.array(zod.string()),
             themes: zod.array(zod.string()),
@@ -471,6 +527,10 @@ export const GenerateQuarterlySummaryResponse = zod.object({
 /**
  * @summary Get aggregate stats for the dashboard
  */
+export const getStatsOverviewResponseRecentActivityItemAiResultSentimentScoreMin =
+  -1;
+export const getStatsOverviewResponseRecentActivityItemAiResultSentimentScoreMax = 1;
+
 export const GetStatsOverviewResponse = zod.object({
   totalNotes: zod.number(),
   notesThisWeek: zod.number(),
@@ -518,6 +578,15 @@ export const GetStatsOverviewResponse = zod.object({
           id: zod.string(),
           noteId: zod.string(),
           sentiment: zod.enum(["positive", "neutral", "negative"]),
+          sentimentScore: zod
+            .number()
+            .min(
+              getStatsOverviewResponseRecentActivityItemAiResultSentimentScoreMin,
+            )
+            .max(
+              getStatsOverviewResponseRecentActivityItemAiResultSentimentScoreMax,
+            )
+            .nullish(),
           keyExtraction: zod.object({
             risks: zod.array(zod.string()),
             themes: zod.array(zod.string()),

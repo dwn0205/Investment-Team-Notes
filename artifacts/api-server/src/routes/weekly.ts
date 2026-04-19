@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { notes } from "@workspace/db";
-import { eq, and, gte, desc } from "drizzle-orm";
+import { eq, and, gte, lte, desc } from "drizzle-orm";
 
 const router = Router();
 
@@ -30,14 +30,18 @@ function formatNote(note: any) {
 
 router.get("/", async (req, res) => {
   try {
-    const sevenDaysAgo = new Date();
+    const asOfParam = req.query.asOf as string | undefined;
+    const asOf = asOfParam ? new Date(asOfParam) : new Date();
+    asOf.setHours(23, 59, 59, 999);
+    const sevenDaysAgo = new Date(asOf);
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     const weeklyNotes = await db.query.notes.findMany({
       where: and(
         eq(notes.isDeleted, false),
         eq(notes.includeInWeekly, true),
-        gte(notes.noteDate, sevenDaysAgo)
+        gte(notes.noteDate, sevenDaysAgo),
+        lte(notes.noteDate, asOf)
       ),
       with: {
         company: true,

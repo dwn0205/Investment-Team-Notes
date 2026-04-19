@@ -1,5 +1,5 @@
 import { useGetWeeklyAgenda } from "@workspace/api-client-react";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 import { SentimentBadge, RoleBadge } from "@/components/badges";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CalendarX2, Hash, LayoutList, User, FileText, Building2, AlertTriangle, TrendingUp, ShieldAlert } from "lucide-react";
@@ -16,10 +16,15 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export default function WeeklyPage() {
-  const { data: agendaGroups, isLoading } = useGetWeeklyAgenda();
+  const [asOf, setAsOf] = useState(format(new Date(), "yyyy-MM-dd"));
+  const { data: agendaGroups, isLoading } = useGetWeeklyAgenda({ asOf });
   const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
   const [groupBy, setGroupBy] = useState<GroupBy>("category");
   const [showNegativeOnly, setShowNegativeOnly] = useState(false);
+
+  const rangeEnd = new Date(asOf + "T23:59:59");
+  const rangeStart = subDays(rangeEnd, 7);
+  const dateRangeLabel = `${format(rangeStart, "MMM d")} – ${format(rangeEnd, "MMM d, yyyy")}`;
 
   const allNotes = useMemo(
     () => agendaGroups?.flatMap((g) => g.notes) ?? [],
@@ -194,8 +199,15 @@ export default function WeeklyPage() {
               User
             </Button>
           </div>
-          <div className="text-sm font-medium px-3 py-1.5 bg-card border border-card-border rounded-md text-foreground">
-            {format(new Date(), "MMMM d, yyyy")}
+          <div className="flex flex-col items-end gap-1">
+            <input
+              type="date"
+              value={asOf}
+              max={format(new Date(), "yyyy-MM-dd")}
+              onChange={e => e.target.value && setAsOf(e.target.value)}
+              className="h-9 px-3 rounded-md border border-border bg-card text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+            <span className="text-xs text-muted-foreground">{dateRangeLabel}</span>
           </div>
         </div>
       </div>

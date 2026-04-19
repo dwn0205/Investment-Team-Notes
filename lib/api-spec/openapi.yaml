@@ -269,6 +269,14 @@ paths:
       operationId: getWeeklyAgenda
       tags: [weekly]
       summary: Get weekly agenda (last 7 days, includeInWeekly=true)
+      parameters:
+        - name: asOf
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Reference date (ISO yyyy-MM-dd). Returns notes from the 7 days up to and including this date. Defaults to today.
       responses:
         "200":
           description: Weekly agenda grouped by company/category

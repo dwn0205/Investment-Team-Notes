@@ -128,6 +128,10 @@ export interface NoteAiResult {
   id: string;
   noteId: string;
   sentiment: NoteAiResultSentiment;
+  /**
+   * @minimum -1
+   * @maximum 1
+   */
   sentimentScore?: number | null;
   keyExtraction: NoteAiResultKeyExtraction;
   source: NoteAiResultSource;
@@ -196,7 +200,6 @@ export interface UpdateNoteBody {
   stageAtTimeOfNote?: UpdateNoteBodyStageAtTimeOfNote;
   includeInWeekly?: boolean;
   editReason?: string | null;
-  editedByUserId?: string;
 }
 
 export interface NoteVersion {
@@ -282,3 +285,10 @@ export const ListNotesCategory = {
   pipeline: "pipeline",
   portfolio: "portfolio",
 } as const;
+
+export type GetWeeklyAgendaParams = {
+  /**
+   * Reference date (ISO yyyy-MM-dd). Returns notes from the 7 days up to and including this date. Defaults to today.
+   */
+  asOf?: string;
+};
