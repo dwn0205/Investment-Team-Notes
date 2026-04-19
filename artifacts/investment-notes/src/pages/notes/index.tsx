@@ -5,7 +5,8 @@ import { CategoryBadge, SentimentBadge, RoleBadge } from "@/components/badges";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, ChevronDown, ChevronRight, FileText, CheckCircle2, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, ChevronDown, ChevronRight, FileText, CheckCircle2, X, EyeOff } from "lucide-react";
 import { ExpandedNoteView } from "@/components/expanded-note";
 
 export default function NotesPage() {
@@ -15,6 +16,7 @@ export default function NotesPage() {
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
 
+  const [showInactive, setShowInactive] = useState(false);
   const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
 
   const { data: notes, isLoading } = useListNotes({
@@ -26,13 +28,13 @@ export default function NotesPage() {
 
   const { data: companies } = useListCompanies();
 
-  const filtered = search.trim()
-    ? notes?.filter(n =>
-        n.content.toLowerCase().includes(search.toLowerCase()) ||
-        n.company?.name.toLowerCase().includes(search.toLowerCase()) ||
-        n.user?.fullName.toLowerCase().includes(search.toLowerCase())
-      )
-    : notes;
+  const filtered = notes
+    ?.filter(n => showInactive || n.company?.status !== "dropped")
+    .filter(n => !search.trim() || (
+      n.content.toLowerCase().includes(search.toLowerCase()) ||
+      n.company?.name.toLowerCase().includes(search.toLowerCase()) ||
+      (n.user?.fullName ?? "").toLowerCase().includes(search.toLowerCase())
+    ));
 
   const dateError = dateFrom && dateTo && dateTo < dateFrom
     ? "End date must be after start date"
@@ -79,6 +81,16 @@ export default function NotesPage() {
             ))}
           </SelectContent>
         </Select>
+
+        <Button
+          variant={showInactive ? "secondary" : "outline"}
+          size="sm"
+          className="h-9 px-3 text-xs gap-1.5 shrink-0"
+          onClick={() => setShowInactive(v => !v)}
+        >
+          <EyeOff className="h-3.5 w-3.5" />
+          {showInactive ? "Hide inactive" : "Show inactive"}
+        </Button>
 
         {/* Date range — inline with other filters */}
         <div className="flex flex-col gap-1">
