@@ -49,11 +49,14 @@ export default function WeeklyPage() {
     return { noteCount, companyCount, totalRisks, sentimentLabel, sentimentCounts };
   }, [allNotes]);
 
-  // Collect top risks with company attribution, deduplicated
+  // Collect top risks with company attribution, deduplicated — sorted most negative first
   const keyRisks = useMemo(() => {
     const seen = new Set<string>();
     const risks: { risk: string; company: string | null }[] = [];
-    for (const note of allNotes) {
+    const sorted = [...allNotes].sort(
+      (a, b) => (a.aiResult?.sentimentScore ?? 0) - (b.aiResult?.sentimentScore ?? 0)
+    );
+    for (const note of sorted) {
       const noteRisks: string[] = (note.aiResult?.keyExtraction as any)?.risks ?? [];
       for (const r of noteRisks) {
         const key = r.toLowerCase().trim();
