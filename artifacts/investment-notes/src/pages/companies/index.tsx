@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2 } from "lucide-react";
-import { CategoryBadge } from "@/components/badges";
+import { CompanyTypeBadge } from "@/components/badges";
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   active:  { label: "Active",   className: "bg-primary text-primary-foreground" },
@@ -233,7 +233,7 @@ export default function CompaniesPage() {
                   <tr key={c.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
                     <td className="py-3 px-4 text-sm font-medium text-foreground">{c.name}</td>
                     <td className="py-3 px-4">
-                      <CategoryBadge category={c.type} />
+                      <CompanyTypeBadge type={c.type} />
                     </td>
                     <td className="py-3 px-4">
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${s.className}`}>
