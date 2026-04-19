@@ -6,25 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil } from "lucide-react";
 import { CategoryBadge } from "@/components/badges";
 
-const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secondary" | "outline" }> = {
-  active:  { label: "Active",  variant: "default" },
-  exited:  { label: "Exited",  variant: "secondary" },
-  dropped: { label: "Dropped", variant: "outline" },
-};
-
 type CompanyFormValues = {
   name: string;
   type: "pipeline" | "portfolio";
-  status: "active" | "exited" | "dropped";
 };
 
-const EMPTY_ADD: CompanyFormValues = { name: "", type: "pipeline", status: "active" };
+const EMPTY_ADD: CompanyFormValues = { name: "", type: "pipeline" };
 
 function CompanyDialog({
   open,
@@ -76,24 +68,6 @@ function CompanyDialog({
               </SelectContent>
             </Select>
           </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">Status</label>
-            <Select value={values.status} onValueChange={v => setValues(prev => ({ ...prev, status: v as any }))}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="exited">Exited</SelectItem>
-                <SelectItem value="dropped">Dropped</SelectItem>
-              </SelectContent>
-            </Select>
-            {values.status !== "active" && (
-              <p className="text-xs text-muted-foreground">
-                Exited and Dropped companies are hidden from the new note form.
-              </p>
-            )}
-          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isSaving}>
@@ -130,11 +104,11 @@ export default function CompaniesPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, values }: { id: string; values: CompanyFormValues }) => {
+    mutationFn: async ({ id, values, existingStatus }: { id: string; values: CompanyFormValues; existingStatus: string }) => {
       const res = await fetch(`/api/companies/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify({ ...values, status: existingStatus }),
       });
       if (!res.ok) throw new Error("Failed to update company");
       return res.json() as Promise<Company>;
@@ -181,36 +155,29 @@ export default function CompaniesPage() {
               <tr className="border-b border-border bg-muted/30">
                 <th className="py-2.5 px-4 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Name</th>
                 <th className="py-2.5 px-4 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Category</th>
-                <th className="py-2.5 px-4 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
                 <th className="py-2.5 px-4" />
               </tr>
             </thead>
             <tbody>
-              {sorted.map(c => {
-                const status = STATUS_CONFIG[c.status] ?? { label: c.status, variant: "outline" as const };
-                return (
-                  <tr key={c.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                    <td className="py-3 px-4 text-sm font-medium text-foreground">{c.name}</td>
-                    <td className="py-3 px-4">
-                      <CategoryBadge category={c.type} />
-                    </td>
-                    <td className="py-3 px-4">
-                      <Badge variant={status.variant}>{status.label}</Badge>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 px-2 text-muted-foreground hover:text-foreground"
-                        onClick={() => setEditTarget(c)}
-                      >
-                        <Pencil className="w-3.5 h-3.5 mr-1" />
-                        Edit
-                      </Button>
-                    </td>
-                  </tr>
-                );
-              })}
+              {sorted.map(c => (
+                <tr key={c.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                  <td className="py-3 px-4 text-sm font-medium text-foreground">{c.name}</td>
+                  <td className="py-3 px-4">
+                    <CategoryBadge category={c.type} />
+                  </td>
+                  <td className="py-3 px-4 text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-muted-foreground hover:text-foreground"
+                      onClick={() => setEditTarget(c)}
+                    >
+                      <Pencil className="w-3.5 h-3.5 mr-1" />
+                      Edit
+                    </Button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         )}
@@ -222,17 +189,17 @@ export default function CompaniesPage() {
         initial={EMPTY_ADD}
         mode="add"
         isSaving={createMutation.isPending}
-        onSave={values => createMutation.mutate({ data: values })}
+        onSave={values => createMutation.mutate({ data: { ...values, status: "active" } })}
       />
 
       {editTarget && (
         <CompanyDialog
           open={true}
           onClose={() => setEditTarget(null)}
-          initial={{ name: editTarget.name, type: editTarget.type as any, status: editTarget.status as any }}
+          initial={{ name: editTarget.name, type: editTarget.type as any }}
           mode="edit"
           isSaving={updateMutation.isPending}
-          onSave={values => updateMutation.mutate({ id: editTarget.id, values })}
+          onSave={values => updateMutation.mutate({ id: editTarget.id, values, existingStatus: editTarget.status })}
         />
       )}
     </div>
