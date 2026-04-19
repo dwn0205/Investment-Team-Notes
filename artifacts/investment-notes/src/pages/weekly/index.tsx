@@ -178,8 +178,8 @@ export default function WeeklyPage() {
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-8 pb-12">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-6">
+      {/* Header — title + primary filters */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-5">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Weekly Agenda</h1>
           <p className="text-muted-foreground text-sm mt-1">Highlighted intelligence from the past 7 days flagged for discussion.</p>
@@ -208,7 +208,12 @@ export default function WeeklyPage() {
               ))}
             </SelectContent>
           </Select>
+        </div>
+      </div>
 
+      {/* Secondary toolbar — view options + date */}
+      <div className="flex items-center justify-between gap-3 flex-wrap -mt-4">
+        <div className="flex items-center gap-2 flex-wrap">
           {negativeNotes.length > 0 && (
             <Button
               variant={showNegativeOnly ? "destructive" : "outline"}
@@ -240,16 +245,16 @@ export default function WeeklyPage() {
               User
             </Button>
           </div>
-          <div className="flex flex-col items-end gap-1">
-            <input
-              type="date"
-              value={asOf}
-              max={format(new Date(), "yyyy-MM-dd")}
-              onChange={e => e.target.value && setAsOf(e.target.value)}
-              className="h-9 px-3 rounded-md border border-border bg-card text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-            />
-            <span className="text-xs text-muted-foreground">{dateRangeLabel}</span>
-          </div>
+        </div>
+        <div className="flex flex-col items-end gap-1">
+          <input
+            type="date"
+            value={asOf}
+            max={format(new Date(), "yyyy-MM-dd")}
+            onChange={e => e.target.value && setAsOf(e.target.value)}
+            className="h-9 px-3 rounded-md border border-border bg-card text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          />
+          <span className="text-xs text-muted-foreground">{dateRangeLabel}</span>
         </div>
       </div>
 
