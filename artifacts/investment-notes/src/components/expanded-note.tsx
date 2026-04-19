@@ -7,7 +7,7 @@ import { useActiveUser } from "@/contexts/user-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, History, RefreshCw, AlertTriangle, Check, X, Clock, User as UserIcon, CalendarCheck, Trash2 } from "lucide-react";
+import { Sparkles, History, RefreshCw, AlertTriangle, TrendingUp, Check, X, Clock, User as UserIcon, CalendarCheck, Trash2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useQueryClient } from "@tanstack/react-query";
@@ -243,6 +243,21 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
                   {aiResult.keyExtraction.risks.map((risk, i) => (
                     <li key={i} className="text-sm p-2 rounded bg-red-50 text-red-700 border border-red-200 leading-snug">
                       {risk}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {aiResult.keyExtraction.developments && aiResult.keyExtraction.developments.length > 0 && (
+              <div>
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
+                  <TrendingUp className="h-3.5 w-3.5" /> Developments
+                </h4>
+                <ul className="space-y-2">
+                  {aiResult.keyExtraction.developments.map((dev, i) => (
+                    <li key={i} className="text-sm p-2 rounded bg-blue-50 text-blue-700 border border-blue-200 leading-snug">
+                      {dev}
                     </li>
                   ))}
                 </ul>

@@ -591,11 +591,16 @@ components:
               type: array
               items:
                 type: string
+            developments:
+              type: array
+              items:
+                type: string
             metrics:
               type: object
           required:
             - risks
             - themes
+            - developments
             - metrics
         source:
           type: string

@@ -106,6 +106,7 @@ export const ListNotesResponseItem = zod.object({
       keyExtraction: zod.object({
         risks: zod.array(zod.string()),
         themes: zod.array(zod.string()),
+        developments: zod.array(zod.string()),
         metrics: zod.object({}).passthrough(),
       }),
       source: zod.enum(["ai", "manual"]),
@@ -182,6 +183,7 @@ export const GetNoteResponse = zod.object({
       keyExtraction: zod.object({
         risks: zod.array(zod.string()),
         themes: zod.array(zod.string()),
+        developments: zod.array(zod.string()),
         metrics: zod.object({}).passthrough(),
       }),
       source: zod.enum(["ai", "manual"]),
@@ -251,6 +253,7 @@ export const UpdateNoteResponse = zod.object({
       keyExtraction: zod.object({
         risks: zod.array(zod.string()),
         themes: zod.array(zod.string()),
+        developments: zod.array(zod.string()),
         metrics: zod.object({}).passthrough(),
       }),
       source: zod.enum(["ai", "manual"]),
@@ -319,6 +322,7 @@ export const GetNoteAiResultResponse = zod.object({
   keyExtraction: zod.object({
     risks: zod.array(zod.string()),
     themes: zod.array(zod.string()),
+    developments: zod.array(zod.string()),
     metrics: zod.object({}).passthrough(),
   }),
   source: zod.enum(["ai", "manual"]),
@@ -404,6 +408,7 @@ export const GetWeeklyAgendaResponseItem = zod.object({
           keyExtraction: zod.object({
             risks: zod.array(zod.string()),
             themes: zod.array(zod.string()),
+            developments: zod.array(zod.string()),
             metrics: zod.object({}).passthrough(),
           }),
           source: zod.enum(["ai", "manual"]),
@@ -486,6 +491,7 @@ export const GetQuarterlySummaryResponse = zod.object({
           keyExtraction: zod.object({
             risks: zod.array(zod.string()),
             themes: zod.array(zod.string()),
+            developments: zod.array(zod.string()),
             metrics: zod.object({}).passthrough(),
           }),
           source: zod.enum(["ai", "manual"]),
@@ -590,6 +596,7 @@ export const GetStatsOverviewResponse = zod.object({
           keyExtraction: zod.object({
             risks: zod.array(zod.string()),
             themes: zod.array(zod.string()),
+            developments: zod.array(zod.string()),
             metrics: zod.object({}).passthrough(),
           }),
           source: zod.enum(["ai", "manual"]),

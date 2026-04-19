@@ -17,6 +17,7 @@ Respond with valid JSON only, no markdown, in this exact format:
   "sentimentScore": <number between -1.0 and 1.0>,
   "risks": ["risk1", "risk2"],
   "themes": ["theme1", "theme2"],
+  "developments": ["development1", "development2"],
   "metrics": {}
 }
 
@@ -25,6 +26,7 @@ Guidelines:
 - sentimentScore: precise score where -1.0 = extremely negative, 0.0 = perfectly neutral, 1.0 = extremely positive. Must be consistent with the sentiment label (positive → 0.1 to 1.0, neutral → -0.1 to 0.1, negative → -1.0 to -0.1)
 - risks: specific risks or concerns mentioned (max 5)
 - themes: key investment themes or topics (max 5)
+- developments: notable recent changes, news, or evolving situations mentioned in the note — what is actively shifting or in motion (max 5)
 - metrics: any specific numbers mentioned (e.g. { "revenue": "$10M", "growth": "15%" })`;
 
     const completion = await openai.chat.completions.create({
@@ -46,6 +48,7 @@ Guidelines:
     const keyExtraction = JSON.stringify({
       risks: parsed.risks ?? [],
       themes: parsed.themes ?? [],
+      developments: parsed.developments ?? [],
       metrics: parsed.metrics ?? {},
     });
 

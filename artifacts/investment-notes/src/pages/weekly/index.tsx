@@ -340,9 +340,9 @@ export default function WeeklyPage() {
           </p>
         </div>
       ) : !groups.length ? (
-        <div className="flex flex-col items-center justify-center p-10 text-center border border-dashed border-red-200 rounded-lg bg-red-50/30">
-          <ShieldAlert className="h-10 w-10 text-red-400 mb-3" />
-          <h3 className="text-base font-medium text-foreground">No negative-sentiment notes this week</h3>
+        <div className="flex flex-col items-center justify-center p-10 text-center border border-dashed border-border rounded-lg">
+          <CalendarX2 className="h-10 w-10 text-muted-foreground/50 mb-3" />
+          <h3 className="text-base font-medium text-foreground">No notes match the selected filters</h3>
         </div>
       ) : (
         <div className="space-y-10">

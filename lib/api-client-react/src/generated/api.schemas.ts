@@ -121,6 +121,7 @@ export type NoteAiResultKeyExtractionMetrics = { [key: string]: unknown };
 export type NoteAiResultKeyExtraction = {
   risks: string[];
   themes: string[];
+  developments: string[];
   metrics: NoteAiResultKeyExtractionMetrics;
 };
 
