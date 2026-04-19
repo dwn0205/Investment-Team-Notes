@@ -160,9 +160,12 @@ router.put("/:id", async (req, res) => {
 
     const { content, category, companyId, stageAtTimeOfNote, includeInWeekly, editReason, editedByUserId } = parsed.data;
     const contentChanged = content !== undefined && content !== existing.content;
+    const categoryChanged = category !== undefined && category !== null && category !== existing.category;
+    const companyChanged = companyId !== undefined && (companyId ?? null) !== existing.companyId;
+    const anythingChanged = contentChanged || categoryChanged || companyChanged;
 
-    if (contentChanged) {
-      // Version snapshot records who held the note BEFORE this edit
+    if (anythingChanged) {
+      // Version snapshot records the state of the note BEFORE this edit
       await db.insert(noteVersions).values({
         noteId: existing.id,
         contentSnapshot: existing.content,
@@ -188,9 +191,8 @@ router.put("/:id", async (req, res) => {
     if (companyId !== undefined) updateFields.companyId = companyId ?? null;
     if (stageAtTimeOfNote !== undefined) updateFields.stageAtTimeOfNote = stageAtTimeOfNote ?? null;
     if (includeInWeekly !== undefined) updateFields.includeInWeekly = includeInWeekly;
-    if (contentChanged) {
+    if (anythingChanged) {
       updateFields.versionCount = (existing.versionCount ?? 1) + 1;
-      // Update the note's user to whoever made this edit
       if (editedByUserId) updateFields.userId = editedByUserId;
     }
 
