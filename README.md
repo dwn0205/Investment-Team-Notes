@@ -265,10 +265,10 @@ The database has six tables. Here is each one, what it stores, and why it was de
 | `id` | UUID | Primary key, auto-generated |
 | `name` | text | Unique company name |
 | `type` | enum | `pipeline` (being evaluated) or `portfolio` (already invested) |
-| `status` | enum | `active`, `exited`, or `dropped` |
+| `status` | enum | `active` or `inactive` |
 | `created_at` | timestamp | Record creation time |
 
-**Why:** The two types (`pipeline` vs `portfolio`) drive different behaviour across the app. Quarterly summaries are only for portfolio companies (you've already invested). Pipeline companies are tracked during evaluation. The `status` field lets the team mark companies as exited or dropped without deleting them — preserving the historical note record.
+**Why:** The two types (`pipeline` vs `portfolio`) drive different behaviour across the app. Quarterly summaries are only for portfolio companies (you've already invested). Pipeline companies are tracked during evaluation. The `status` field lets the team mark companies as inactive without deleting them — preserving the historical note record. Inactive companies are hidden from new note creation and company selectors but remain visible on any notes already associated with them.
 
 **Note — Slowly Changing Dimensions not implemented:**
 In data warehousing, a Slowly Changing Dimension (SCD) is a pattern for tracking how a dimension record's attributes change over time. For example, a company's `type` can change — it starts as `pipeline` and later becomes `portfolio` once the investment closes. A full SCD Type 2 implementation would keep a history of these changes, with effective date ranges, so you could query "what type was this company at the time this note was written?"
