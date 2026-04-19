@@ -63,18 +63,20 @@ function CompanyDialog({
               autoFocus
             />
           </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">Category</label>
-            <Select value={values.type} onValueChange={v => setValues(prev => ({ ...prev, type: v as any }))}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pipeline">Pipeline</SelectItem>
-                <SelectItem value="portfolio">Portfolio</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {mode === "add" && (
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium">Category</label>
+              <Select value={values.type} onValueChange={v => setValues(prev => ({ ...prev, type: v as any }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pipeline">Pipeline</SelectItem>
+                  <SelectItem value="portfolio">Portfolio</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isSaving}>
