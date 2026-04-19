@@ -204,6 +204,7 @@ export const UpdateNoteBody = zod.object({
   stageAtTimeOfNote: zod.enum(["initial", "final", "closed"]).nullish(),
   includeInWeekly: zod.boolean().optional(),
   editReason: zod.string().nullish(),
+  editedByUserId: zod.string().nullish(),
 });
 
 export const updateNoteResponseAiResultSentimentScoreMin = -1;

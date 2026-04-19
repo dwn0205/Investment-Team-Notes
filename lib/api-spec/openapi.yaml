@@ -538,6 +538,9 @@ components:
         editReason:
           type: string
           nullable: true
+        editedByUserId:
+          type: string
+          nullable: true
       required: []
 
     NoteVersion:
