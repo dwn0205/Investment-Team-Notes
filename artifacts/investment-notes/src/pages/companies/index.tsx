@@ -221,7 +221,7 @@ export default function CompaniesPage() {
             <thead>
               <tr className="border-b border-border bg-muted/30">
                 <th className="py-2.5 px-4 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Name</th>
-                <th className="py-2.5 px-4 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Category</th>
+                <th className="py-2.5 px-4 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
                 <th className="py-2.5 px-4 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
                 <th className="py-2.5 px-4" />
               </tr>
