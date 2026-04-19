@@ -10,11 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil } from "lucide-react";
-
-const TYPE_CONFIG: Record<string, { label: string; variant: "default" | "secondary" | "outline" }> = {
-  pipeline:  { label: "Pipeline",  variant: "secondary" },
-  portfolio: { label: "Portfolio", variant: "default" },
-};
+import { CategoryBadge } from "@/components/badges";
 
 const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secondary" | "outline" }> = {
   active:  { label: "Active",  variant: "default" },
@@ -191,13 +187,12 @@ export default function CompaniesPage() {
             </thead>
             <tbody>
               {sorted.map(c => {
-                const type = TYPE_CONFIG[c.type] ?? { label: c.type, variant: "outline" as const };
                 const status = STATUS_CONFIG[c.status] ?? { label: c.status, variant: "outline" as const };
                 return (
                   <tr key={c.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
                     <td className="py-3 px-4 text-sm font-medium text-foreground">{c.name}</td>
                     <td className="py-3 px-4">
-                      <Badge variant={type.variant}>{type.label}</Badge>
+                      <CategoryBadge category={c.type} />
                     </td>
                     <td className="py-3 px-4">
                       <Badge variant={status.variant}>{status.label}</Badge>
