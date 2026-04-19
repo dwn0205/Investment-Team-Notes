@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Plus, LayoutList, Calendar, PieChart, ChevronDown } from "lucide-react";
+import { Plus, LayoutList, Calendar, PieChart, Building2, ChevronDown } from "lucide-react";
 import { useListUsers } from "@workspace/api-client-react";
 import { useActiveUser } from "@/contexts/user-context";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -58,6 +58,16 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                         <span className="flex items-center gap-2 cursor-pointer w-full">
                           <PieChart className="w-4 h-4" />
                           <span>Quarterly Summaries</span>
+                        </span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={location === "/companies"}>
+                      <Link href="/companies">
+                        <span className="flex items-center gap-2 cursor-pointer w-full">
+                          <Building2 className="w-4 h-4" />
+                          <span>Companies</span>
                         </span>
                       </Link>
                     </SidebarMenuButton>

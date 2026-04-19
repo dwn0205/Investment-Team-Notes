@@ -9,6 +9,7 @@ import NotesPage from "@/pages/notes";
 import NewNotePage from "@/pages/notes/new";
 import WeeklyPage from "@/pages/weekly";
 import QuarterlyPage from "@/pages/quarterly";
+import CompaniesPage from "@/pages/companies";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,6 +30,7 @@ function Router() {
         <Route path="/notes/new" component={NewNotePage} />
         <Route path="/weekly" component={WeeklyPage} />
         <Route path="/quarterly" component={QuarterlyPage} />
+        <Route path="/companies" component={CompaniesPage} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>
