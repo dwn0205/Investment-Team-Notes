@@ -67,23 +67,8 @@ export function RoleBadge({ role }: { role: string }) {
 }
 
 export function CompanyTypeBadge({ type }: { type: string }) {
-  if (type === "pipeline") {
-    return (
-      <Badge className="bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100 rounded font-medium text-xs px-2 py-0.5">
-        Pipeline
-      </Badge>
-    );
-  }
-  if (type === "portfolio") {
-    return (
-      <Badge className="bg-violet-100 text-violet-700 border-violet-200 hover:bg-violet-100 rounded font-medium text-xs px-2 py-0.5">
-        Portfolio
-      </Badge>
-    );
-  }
+  const label = type === "pipeline" ? "Pipeline" : type === "portfolio" ? "Portfolio" : type;
   return (
-    <Badge className="bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-100 rounded font-medium text-xs px-2 py-0.5">
-      {type}
-    </Badge>
+    <span className="text-xs text-muted-foreground font-medium">{label}</span>
   );
 }
