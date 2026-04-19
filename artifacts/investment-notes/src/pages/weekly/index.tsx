@@ -6,6 +6,7 @@ import { CalendarX2, Hash, LayoutList, User, FileText, Building2, AlertTriangle,
 import { ExpandedNoteView } from "@/components/expanded-note";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type GroupBy = "category" | "user";
 
@@ -21,6 +22,8 @@ export default function WeeklyPage() {
   const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
   const [groupBy, setGroupBy] = useState<GroupBy>("category");
   const [showNegativeOnly, setShowNegativeOnly] = useState(false);
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [filterUserId, setFilterUserId] = useState("all");
 
   const rangeEnd = new Date(asOf + "T23:59:59");
   const rangeStart = subDays(rangeEnd, 7);
@@ -29,6 +32,20 @@ export default function WeeklyPage() {
   const allNotes = useMemo(
     () => agendaGroups?.flatMap((g) => g.notes) ?? [],
     [agendaGroups]
+  );
+
+  const availableUsers = useMemo(() => {
+    const seen = new Map<string, string>();
+    for (const note of allNotes) {
+      if (note.user && !seen.has(note.user.id)) seen.set(note.user.id, note.user.fullName);
+    }
+    return Array.from(seen.entries()).map(([id, fullName]) => ({ id, fullName }));
+  }, [allNotes]);
+
+  const filteredNotes = useMemo(() => allNotes
+    .filter(n => filterCategory === "all" || n.category === filterCategory)
+    .filter(n => filterUserId === "all" || n.user?.id === filterUserId),
+    [allNotes, filterCategory, filterUserId]
   );
 
   const stats = useMemo(() => {
@@ -77,13 +94,13 @@ export default function WeeklyPage() {
   }, [allNotes]);
 
   const negativeNotes = useMemo(
-    () => allNotes.filter((n) => n.aiResult?.sentiment === "negative"),
-    [allNotes]
+    () => filteredNotes.filter((n) => n.aiResult?.sentiment === "negative"),
+    [filteredNotes]
   );
 
   const displayNotes = useMemo(
-    () => (showNegativeOnly ? negativeNotes : allNotes),
-    [allNotes, negativeNotes, showNegativeOnly]
+    () => (showNegativeOnly ? negativeNotes : filteredNotes),
+    [filteredNotes, negativeNotes, showNegativeOnly]
   );
 
   const groups = useMemo(() => {
@@ -168,6 +185,30 @@ export default function WeeklyPage() {
           <p className="text-muted-foreground text-sm mt-1">Highlighted intelligence from the past 7 days flagged for discussion.</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
+          <Select value={filterCategory} onValueChange={setFilterCategory}>
+            <SelectTrigger className="w-[145px] h-9 text-sm bg-card border-border shadow-none">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="pipeline">Pipeline</SelectItem>
+              <SelectItem value="portfolio">Portfolio</SelectItem>
+              <SelectItem value="generic">Generic / Market</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={filterUserId} onValueChange={setFilterUserId}>
+            <SelectTrigger className="w-[145px] h-9 text-sm bg-card border-border shadow-none">
+              <SelectValue placeholder="All Users" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Users</SelectItem>
+              {availableUsers.map(u => (
+                <SelectItem key={u.id} value={u.id}>{u.fullName}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           {negativeNotes.length > 0 && (
             <Button
               variant={showNegativeOnly ? "destructive" : "outline"}
