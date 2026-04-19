@@ -309,11 +309,13 @@ This was intentionally not implemented here. For an internal notes tool used by 
 | `id` | UUID | Primary key |
 | `note_id` | UUID | Links to the parent note |
 | `content_snapshot` | text | Full copy of the note content at that point in time |
+| `category_snapshot` | enum | Category (`generic`, `pipeline`, `portfolio`) at the time of the snapshot |
+| `company_id_snapshot` | UUID | Company the note was assigned to at the time of the snapshot |
 | `user_id` | UUID | Who made the edit |
 | `edit_reason` | text | Optional explanation for the change |
 | `created_at` | timestamp | When the edit happened |
 
-**Why:** Any time a note's content changes, a version record is created. This gives a complete audit trail — who changed what, when, and why. This matters in a regulated investment context where decisions need to be traceable.
+**Why:** A version record is created any time a note's content, category, or company changes. This gives a complete point-in-time snapshot — who changed what, when, and why. Capturing `category_snapshot` and `company_id_snapshot` alongside the content means the history panel can show exactly what state the note was in before each edit, not just what the text said. This matters in a regulated investment context where decisions need to be fully traceable.
 
 ---
 
@@ -325,7 +327,7 @@ This was intentionally not implemented here. For an internal notes tool used by 
 | `note_id` | UUID | One-to-one link to a note (unique constraint) |
 | `sentiment` | enum | `positive`, `neutral`, or `negative` |
 | `sentiment_score` | real | Numeric score from -1.0 (very negative) to 1.0 (very positive) |
-| `key_extraction` | text | JSON blob — risks, themes, and key metrics extracted from the note |
+| `key_extraction` | text | JSON blob — risks, themes, key metrics, and developments extracted from the note |
 | `source` | enum | `ai` (generated) or `manual` (human override) |
 | `generated_at` | timestamp | When the AI processed it |
 
@@ -347,6 +349,7 @@ The `sentiment_score` gives more granularity than the three-label sentiment alon
 | `overall_sentiment` | enum | `positive`, `neutral`, or `negative` |
 | `key_themes` | text | JSON array of themes |
 | `risks` | text | JSON array of risks |
+| `developments` | text | JSON array of notable developments across the quarter |
 | `generated_at` | timestamp | When the summary was generated |
 
 **Why:** Generating a quarterly summary from scratch via AI every time someone opens the page would be slow and expensive. Instead, results are cached here. The team can explicitly regenerate when they want a fresh analysis. The summary is scoped to `company_id + year + quarter` — one record per company per quarter.
