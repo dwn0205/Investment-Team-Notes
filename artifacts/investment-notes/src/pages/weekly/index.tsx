@@ -49,13 +49,13 @@ export default function WeeklyPage() {
   );
 
   const stats = useMemo(() => {
-    const noteCount = allNotes.length;
-    const companyCount = new Set(allNotes.map((n) => n.companyId).filter(Boolean)).size;
+    const noteCount = filteredNotes.length;
+    const companyCount = new Set(filteredNotes.map((n) => n.companyId).filter(Boolean)).size;
 
     const sentimentCounts = { positive: 0, neutral: 0, negative: 0 };
     let totalRisks = 0;
 
-    for (const note of allNotes) {
+    for (const note of filteredNotes) {
       const s = note.aiResult?.sentiment;
       if (s === "positive" || s === "neutral" || s === "negative") sentimentCounts[s]++;
       totalRisks += (note.aiResult?.keyExtraction as any)?.risks?.length ?? 0;
@@ -69,7 +69,7 @@ export default function WeeklyPage() {
         : dominant[0][0].charAt(0).toUpperCase() + dominant[0][0].slice(1);
 
     return { noteCount, companyCount, totalRisks, sentimentLabel, sentimentCounts };
-  }, [allNotes]);
+  }, [filteredNotes]);
 
   // Collect top risks with company attribution, deduplicated — sorted most negative first
   const keyRisks = useMemo(() => {
