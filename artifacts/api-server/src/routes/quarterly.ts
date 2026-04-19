@@ -89,6 +89,7 @@ router.get("/:companyId/:year/:quarter", async (req, res) => {
         ...summary,
         keyThemes: JSON.parse(summary.keyThemes ?? "[]"),
         risks: JSON.parse(summary.risks ?? "[]"),
+        developments: JSON.parse(summary.developments ?? "[]"),
         generatedAt: summary.generatedAt?.toISOString() ?? null,
       } : null,
       notes: quarterNotes.map(formatNote),
@@ -147,6 +148,7 @@ Content: ${n.content}
 AI Sentiment: ${n.aiResult?.sentiment ?? "unknown"}
 Risks: ${ai?.risks?.join(", ") ?? "none"}
 Themes: ${ai?.themes?.join(", ") ?? "none"}
+Developments: ${ai?.developments?.join(", ") ?? "none"}
 ---`;
     }).join("\n");
 
@@ -161,8 +163,14 @@ Respond with valid JSON only, no markdown, in this exact format:
   "summaryText": "3-5 bullet points as a single string, each bullet starting with • ",
   "overallSentiment": "positive" | "neutral" | "negative",
   "keyThemes": ["theme1", "theme2", "theme3"],
-  "risks": ["risk1", "risk2", "risk3"]
-}`;
+  "risks": ["risk1", "risk2", "risk3"],
+  "developments": ["development1", "development2", "development3"]
+}
+
+Guidelines:
+- keyThemes: recurring investment themes across the quarter (max 5)
+- risks: key risks or concerns surfaced this quarter (max 5)
+- developments: notable changes, events, or shifts that occurred this quarter — what is actively in motion (max 5)`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-5.2",
@@ -201,6 +209,7 @@ Respond with valid JSON only, no markdown, in this exact format:
           overallSentiment: parsed.overallSentiment,
           keyThemes: JSON.stringify(parsed.keyThemes),
           risks: JSON.stringify(parsed.risks),
+          developments: JSON.stringify(parsed.developments ?? []),
           generatedAt: new Date(),
         })
         .where(eq(quarterlySummaries.id, existing.id))
@@ -214,6 +223,7 @@ Respond with valid JSON only, no markdown, in this exact format:
         overallSentiment: parsed.overallSentiment,
         keyThemes: JSON.stringify(parsed.keyThemes),
         risks: JSON.stringify(parsed.risks),
+        developments: JSON.stringify(parsed.developments ?? []),
       }).returning();
     }
 
@@ -221,6 +231,7 @@ Respond with valid JSON only, no markdown, in this exact format:
       ...summary,
       keyThemes: JSON.parse(summary.keyThemes ?? "[]"),
       risks: JSON.parse(summary.risks ?? "[]"),
+      developments: JSON.parse(summary.developments ?? "[]"),
       generatedAt: summary.generatedAt?.toISOString() ?? null,
     });
   } catch (err) {

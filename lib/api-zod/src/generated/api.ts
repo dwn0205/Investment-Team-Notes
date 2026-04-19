@@ -443,6 +443,7 @@ export const GetQuarterlySummaryResponse = zod.object({
       overallSentiment: zod.enum(["positive", "neutral", "negative"]),
       keyThemes: zod.array(zod.string()),
       risks: zod.array(zod.string()),
+      developments: zod.array(zod.string()).optional(),
       generatedAt: zod.string(),
     })
     .nullish(),
@@ -527,6 +528,7 @@ export const GenerateQuarterlySummaryResponse = zod.object({
   overallSentiment: zod.enum(["positive", "neutral", "negative"]),
   keyThemes: zod.array(zod.string()),
   risks: zod.array(zod.string()),
+  developments: zod.array(zod.string()).optional(),
   generatedAt: zod.string(),
 });
 

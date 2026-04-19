@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Loader2, TrendingUp, TrendingDown, Minus, AlertTriangle,
-  Lightbulb, FileText, RefreshCw, ChevronDown, ChevronRight, BarChart2,
+  Lightbulb, FileText, RefreshCw, ChevronDown, ChevronRight, BarChart2, ArrowUpRight,
 } from "lucide-react";
 import { SentimentBadge, RoleBadge } from "@/components/badges";
 import { ExpandedNoteView } from "@/components/expanded-note";
@@ -252,8 +252,8 @@ export default function QuarterlyPage() {
                 </div>
               </div>
 
-              {/* Risks + Themes */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* Risks + Themes + Developments */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {/* Risks */}
                 {quarterlyView.summary.risks?.length > 0 && (
                   <div className="p-5 bg-card border border-card-border rounded-lg space-y-3">
@@ -282,6 +282,23 @@ export default function QuarterlyPage() {
                         <li key={i} className="flex items-start gap-2 text-sm text-foreground">
                           <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-blue-400 shrink-0" />
                           {theme}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Developments */}
+                {quarterlyView.summary.developments?.length > 0 && (
+                  <div className="p-5 bg-card border border-card-border rounded-lg space-y-3">
+                    <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                      <ArrowUpRight className="h-4 w-4 text-emerald-500" /> Developments
+                    </h3>
+                    <ul className="space-y-2">
+                      {quarterlyView.summary.developments.map((dev: string, i: number) => (
+                        <li key={i} className="flex items-start gap-2 text-sm text-foreground">
+                          <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" />
+                          {dev}
                         </li>
                       ))}
                     </ul>

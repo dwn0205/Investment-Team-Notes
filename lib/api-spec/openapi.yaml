@@ -659,6 +659,10 @@ components:
           type: array
           items:
             type: string
+        developments:
+          type: array
+          items:
+            type: string
         generatedAt:
           type: string
       required:

@@ -73,6 +73,7 @@ export const quarterlySummaries = pgTable("quarterly_summaries", {
   overallSentiment: sentimentEnum("overall_sentiment").notNull(),
   keyThemes: text("key_themes").notNull(),
   risks: text("risks").notNull(),
+  developments: text("developments"),
   generatedAt: timestamp("generated_at").notNull().defaultNow(),
 });
 

@@ -247,6 +247,7 @@ export interface QuarterlySummary {
   overallSentiment: QuarterlySummaryOverallSentiment;
   keyThemes: string[];
   risks: string[];
+  developments?: string[];
   generatedAt: string;
 }
 
