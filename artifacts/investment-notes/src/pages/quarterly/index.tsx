@@ -58,7 +58,7 @@ export default function QuarterlyPage() {
 
   const { data: allCompanies } = useListCompanies();
   const portfolioCompanies = useMemo(
-    () => (allCompanies ?? []).filter((c: any) => c.type === "portfolio"),
+    () => (allCompanies ?? []).filter((c: any) => c.type === "portfolio" && c.status !== "dropped"),
     [allCompanies]
   );
 

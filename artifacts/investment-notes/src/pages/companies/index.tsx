@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import { CategoryBadge } from "@/components/badges";
 
 const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secondary" | "outline" }> = {
@@ -30,21 +30,26 @@ function CompanyDialog({
   onClose,
   initial,
   onSave,
+  onDelete,
   isSaving,
+  isDeleting,
   mode,
 }: {
   open: boolean;
   onClose: () => void;
   initial: CompanyFormValues;
   onSave: (values: CompanyFormValues) => void;
+  onDelete?: () => void;
   isSaving: boolean;
+  isDeleting?: boolean;
   mode: "add" | "edit";
 }) {
   const [values, setValues] = useState<CompanyFormValues>(initial);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   function handleOpenChange(isOpen: boolean) {
-    if (!isOpen) onClose();
-    else setValues(initial);
+    if (!isOpen) { onClose(); setConfirmDelete(false); }
+    else { setValues(initial); setConfirmDelete(false); }
   }
 
   return (
@@ -77,6 +82,42 @@ function CompanyDialog({
               </Select>
             </div>
           )}
+
+          {mode === "edit" && onDelete && (
+            <div className="border-t border-border pt-4 mt-2">
+              {confirmDelete ? (
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    This will mark the company as <span className="font-medium text-foreground">Dropped</span>. Existing notes remain visible but it won't appear in new note forms.
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="flex-1"
+                      onClick={onDelete}
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? "Dropping…" : "Confirm Drop"}
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setConfirmDelete(false)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10 w-full justify-start"
+                  onClick={() => setConfirmDelete(true)}
+                >
+                  <Trash2 className="w-3.5 h-3.5 mr-2" />
+                  Drop company
+                </Button>
+              )}
+            </div>
+          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isSaving}>
@@ -99,16 +140,12 @@ export default function CompaniesPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Company | null>(null);
 
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
+
   const createMutation = useCreateCompany({
     mutation: {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
-        setAddOpen(false);
-        toast({ title: "Company added" });
-      },
-      onError: () => {
-        toast({ title: "Failed to add company", variant: "destructive" });
-      },
+      onSuccess: () => { invalidate(); setAddOpen(false); toast({ title: "Company added" }); },
+      onError: () => toast({ title: "Failed to add company", variant: "destructive" }),
     },
   });
 
@@ -122,17 +159,29 @@ export default function CompaniesPage() {
       if (!res.ok) throw new Error("Failed to update company");
       return res.json() as Promise<Company>;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
-      setEditTarget(null);
-      toast({ title: "Company updated" });
-    },
-    onError: () => {
-      toast({ title: "Failed to update company", variant: "destructive" });
-    },
+    onSuccess: () => { invalidate(); setEditTarget(null); toast({ title: "Company updated" }); },
+    onError: () => toast({ title: "Failed to update company", variant: "destructive" }),
   });
 
-  const sorted = (companies ?? []).slice().sort((a, b) => a.name.localeCompare(b.name));
+  const dropMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/companies/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "dropped" }),
+      });
+      if (!res.ok) throw new Error("Failed to drop company");
+      return res.json() as Promise<Company>;
+    },
+    onSuccess: () => { invalidate(); setEditTarget(null); toast({ title: "Company dropped" }); },
+    onError: () => toast({ title: "Failed to drop company", variant: "destructive" }),
+  });
+
+  const sorted = (companies ?? []).slice().sort((a, b) => {
+    if (a.status === "dropped" && b.status !== "dropped") return 1;
+    if (a.status !== "dropped" && b.status === "dropped") return -1;
+    return a.name.localeCompare(b.name);
+  });
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
@@ -169,28 +218,36 @@ export default function CompaniesPage() {
               </tr>
             </thead>
             <tbody>
-              {sorted.map(c => (
-                <tr key={c.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                  <td className="py-3 px-4 text-sm font-medium text-foreground">{c.name}</td>
-                  <td className="py-3 px-4">
-                    <CategoryBadge category={c.type} />
-                  </td>
-                  <td className="py-3 px-4">
-                    {(() => { const s = STATUS_CONFIG[c.status] ?? { label: c.status, variant: "outline" as const }; return <Badge variant={s.variant}>{s.label}</Badge>; })()}
-                  </td>
-                  <td className="py-3 px-4 text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-muted-foreground hover:text-foreground"
-                      onClick={() => setEditTarget(c)}
-                    >
-                      <Pencil className="w-3.5 h-3.5 mr-1" />
-                      Edit
-                    </Button>
-                  </td>
-                </tr>
-              ))}
+              {sorted.map(c => {
+                const isDropped = c.status === "dropped";
+                const s = STATUS_CONFIG[c.status] ?? { label: c.status, variant: "outline" as const };
+                return (
+                  <tr key={c.id} className={`border-b border-border last:border-0 transition-colors ${isDropped ? "opacity-50 bg-muted/10" : "hover:bg-muted/30"}`}>
+                    <td className={`py-3 px-4 text-sm font-medium ${isDropped ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                      {c.name}
+                    </td>
+                    <td className="py-3 px-4">
+                      <CategoryBadge category={c.type} />
+                    </td>
+                    <td className="py-3 px-4">
+                      <Badge variant={s.variant}>{s.label}</Badge>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      {!isDropped && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-muted-foreground hover:text-foreground"
+                          onClick={() => setEditTarget(c)}
+                        >
+                          <Pencil className="w-3.5 h-3.5 mr-1" />
+                          Edit
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
@@ -212,7 +269,9 @@ export default function CompaniesPage() {
           initial={{ name: editTarget.name, type: editTarget.type as any }}
           mode="edit"
           isSaving={updateMutation.isPending}
+          isDeleting={dropMutation.isPending}
           onSave={values => updateMutation.mutate({ id: editTarget.id, values, existingStatus: editTarget.status })}
+          onDelete={() => dropMutation.mutate(editTarget.id)}
         />
       )}
     </div>

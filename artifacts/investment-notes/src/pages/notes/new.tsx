@@ -66,8 +66,9 @@ export default function NewNotePage() {
   const isPortfolio = category === "portfolio";
   const isPipeline = category === "pipeline";
 
-  // Filter companies by category type
+  // Filter companies by category type, excluding dropped
   const filteredCompanies = companies?.filter(c => {
+    if (c.status === "dropped") return false;
     if (isGeneric) return true;
     return c.type === category;
   });
