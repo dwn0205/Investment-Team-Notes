@@ -12,10 +12,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { CategoryBadge } from "@/components/badges";
 
-const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secondary" | "outline" }> = {
-  active:  { label: "Active",  variant: "default" },
-  exited:  { label: "Exited",  variant: "secondary" },
-  dropped: { label: "Dropped", variant: "outline" },
+const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
+  active:  { label: "Active",   className: "bg-primary text-primary-foreground" },
+  exited:  { label: "Exited",   className: "bg-secondary text-secondary-foreground" },
+  dropped: { label: "Inactive", className: "bg-muted text-muted-foreground border border-border" },
 };
 
 type CompanyFormValues = {
@@ -29,27 +29,30 @@ function CompanyDialog({
   open,
   onClose,
   initial,
+  currentStatus,
   onSave,
-  onDelete,
+  onToggleStatus,
   isSaving,
-  isDeleting,
+  isTogglingStatus,
   mode,
 }: {
   open: boolean;
   onClose: () => void;
   initial: CompanyFormValues;
+  currentStatus?: string;
   onSave: (values: CompanyFormValues) => void;
-  onDelete?: () => void;
+  onToggleStatus?: () => void;
   isSaving: boolean;
-  isDeleting?: boolean;
+  isTogglingStatus?: boolean;
   mode: "add" | "edit";
 }) {
   const [values, setValues] = useState<CompanyFormValues>(initial);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmInactive, setConfirmInactive] = useState(false);
+  const isInactive = currentStatus === "dropped";
 
   function handleOpenChange(isOpen: boolean) {
-    if (!isOpen) { onClose(); setConfirmDelete(false); }
-    else { setValues(initial); setConfirmDelete(false); }
+    if (!isOpen) { onClose(); setConfirmInactive(false); }
+    else { setValues(initial); setConfirmInactive(false); }
   }
 
   return (
@@ -83,26 +86,28 @@ function CompanyDialog({
             </div>
           )}
 
-          {mode === "edit" && onDelete && (
-            <div className="border-t border-border pt-4 mt-2">
-              {confirmDelete ? (
+          {mode === "edit" && onToggleStatus && (
+            <div className="border-t border-border pt-4">
+              {isInactive ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start text-sm"
+                  onClick={onToggleStatus}
+                  disabled={isTogglingStatus}
+                >
+                  {isTogglingStatus ? "Restoring…" : "↩ Restore to Active"}
+                </Button>
+              ) : confirmInactive ? (
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">
-                    This will mark the company as <span className="font-medium text-foreground">Dropped</span>. Existing notes remain visible but it won't appear in new note forms.
+                    This will mark the company as <span className="font-medium text-foreground">Inactive</span>. Existing notes stay visible but it won't appear in new note forms.
                   </p>
                   <div className="flex gap-2">
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      className="flex-1"
-                      onClick={onDelete}
-                      disabled={isDeleting}
-                    >
-                      {isDeleting ? "Dropping…" : "Confirm Drop"}
+                    <Button variant="destructive" size="sm" className="flex-1" onClick={onToggleStatus} disabled={isTogglingStatus}>
+                      {isTogglingStatus ? "Saving…" : "Confirm"}
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => setConfirmDelete(false)}>
-                      Cancel
-                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setConfirmInactive(false)}>Cancel</Button>
                   </div>
                 </div>
               ) : (
@@ -110,10 +115,10 @@ function CompanyDialog({
                   variant="ghost"
                   size="sm"
                   className="text-destructive hover:text-destructive hover:bg-destructive/10 w-full justify-start"
-                  onClick={() => setConfirmDelete(true)}
+                  onClick={() => setConfirmInactive(true)}
                 >
                   <Trash2 className="w-3.5 h-3.5 mr-2" />
-                  Drop company
+                  Mark as Inactive
                 </Button>
               )}
             </div>
@@ -163,18 +168,22 @@ export default function CompaniesPage() {
     onError: () => toast({ title: "Failed to update company", variant: "destructive" }),
   });
 
-  const dropMutation = useMutation({
-    mutationFn: async (id: string) => {
+  const toggleStatusMutation = useMutation({
+    mutationFn: async ({ id, newStatus }: { id: string; newStatus: string }) => {
       const res = await fetch(`/api/companies/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "dropped" }),
+        body: JSON.stringify({ status: newStatus }),
       });
-      if (!res.ok) throw new Error("Failed to drop company");
+      if (!res.ok) throw new Error("Failed to update company status");
       return res.json() as Promise<Company>;
     },
-    onSuccess: () => { invalidate(); setEditTarget(null); toast({ title: "Company dropped" }); },
-    onError: () => toast({ title: "Failed to drop company", variant: "destructive" }),
+    onSuccess: (_, { newStatus }) => {
+      invalidate();
+      setEditTarget(null);
+      toast({ title: newStatus === "dropped" ? "Company marked as inactive" : "Company restored to active" });
+    },
+    onError: () => toast({ title: "Failed to update status", variant: "destructive" }),
   });
 
   const sorted = (companies ?? []).slice().sort((a, b) => {
@@ -219,31 +228,28 @@ export default function CompaniesPage() {
             </thead>
             <tbody>
               {sorted.map(c => {
-                const isDropped = c.status === "dropped";
-                const s = STATUS_CONFIG[c.status] ?? { label: c.status, variant: "outline" as const };
+                const s = STATUS_CONFIG[c.status] ?? { label: c.status, className: "bg-muted text-muted-foreground border border-border" };
                 return (
-                  <tr key={c.id} className={`border-b border-border last:border-0 transition-colors ${isDropped ? "opacity-50 bg-muted/10" : "hover:bg-muted/30"}`}>
-                    <td className={`py-3 px-4 text-sm font-medium ${isDropped ? "text-muted-foreground line-through" : "text-foreground"}`}>
-                      {c.name}
-                    </td>
+                  <tr key={c.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                    <td className="py-3 px-4 text-sm font-medium text-foreground">{c.name}</td>
                     <td className="py-3 px-4">
                       <CategoryBadge category={c.type} />
                     </td>
                     <td className="py-3 px-4">
-                      <Badge variant={s.variant}>{s.label}</Badge>
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${s.className}`}>
+                        {s.label}
+                      </span>
                     </td>
                     <td className="py-3 px-4 text-right">
-                      {!isDropped && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 px-2 text-muted-foreground hover:text-foreground"
-                          onClick={() => setEditTarget(c)}
-                        >
-                          <Pencil className="w-3.5 h-3.5 mr-1" />
-                          Edit
-                        </Button>
-                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-muted-foreground hover:text-foreground"
+                        onClick={() => setEditTarget(c)}
+                      >
+                        <Pencil className="w-3.5 h-3.5 mr-1" />
+                        Edit
+                      </Button>
                     </td>
                   </tr>
                 );
@@ -267,11 +273,15 @@ export default function CompaniesPage() {
           open={true}
           onClose={() => setEditTarget(null)}
           initial={{ name: editTarget.name, type: editTarget.type as any }}
+          currentStatus={editTarget.status}
           mode="edit"
           isSaving={updateMutation.isPending}
-          isDeleting={dropMutation.isPending}
+          isTogglingStatus={toggleStatusMutation.isPending}
           onSave={values => updateMutation.mutate({ id: editTarget.id, values, existingStatus: editTarget.status })}
-          onDelete={() => dropMutation.mutate(editTarget.id)}
+          onToggleStatus={() => toggleStatusMutation.mutate({
+            id: editTarget.id,
+            newStatus: editTarget.status === "dropped" ? "active" : "dropped",
+          })}
         />
       )}
     </div>
