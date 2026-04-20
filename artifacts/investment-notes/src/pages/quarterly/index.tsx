@@ -11,14 +11,9 @@ import {
 import { SentimentBadge, RoleBadge } from "@/components/badges";
 import { ExpandedNoteView } from "@/components/expanded-note";
 
-function computePerformanceDirection(notes: any[]): "improving" | "stable" | "deteriorating" {
-  const sentiments = notes.map((n) => n.aiResult?.sentiment).filter(Boolean);
-  if (!sentiments.length) return "stable";
-  const pos = sentiments.filter((s) => s === "positive").length;
-  const neg = sentiments.filter((s) => s === "negative").length;
-  const total = sentiments.length;
-  if (pos / total > 0.6) return "improving";
-  if (neg / total > 0.6) return "deteriorating";
+function sentimentToDirection(sentiment?: string | null): "improving" | "stable" | "deteriorating" {
+  if (sentiment === "positive") return "improving";
+  if (sentiment === "negative") return "deteriorating";
   return "stable";
 }
 
@@ -86,8 +81,8 @@ export default function QuarterlyPage() {
   };
 
   const performanceDirection = useMemo(
-    () => computePerformanceDirection(quarterlyView?.notes ?? []),
-    [quarterlyView?.notes]
+    () => sentimentToDirection(quarterlyView?.summary?.overallSentiment),
+    [quarterlyView?.summary?.overallSentiment]
   );
 
   const dirConfig = DIRECTION_CONFIG[performanceDirection];
@@ -209,9 +204,6 @@ export default function QuarterlyPage() {
                 {quarterlyView.notes.length} note{quarterlyView.notes.length !== 1 ? "s" : ""} in this quarter
               </p>
             </div>
-            {quarterlyView.summary && (
-              <SentimentBadge sentiment={quarterlyView.summary.overallSentiment} />
-            )}
           </div>
 
           {/* No summary yet */}
