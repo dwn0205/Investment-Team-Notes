@@ -56,7 +56,7 @@ export function ExpandedNoteView({ note, onCollapse, showKeyRisks = false }: { n
 
   const handleSave = () => {
     if (!content.trim()) return;
-    updateNote.mutate({ id: note.id, data: { content, category, companyId: companyId ?? undefined, includeInWeekly, editReason: editReason || "General update", editedByUserId: activeUser?.id } }, {
+    updateNote.mutate({ id: note.id, data: { content, category: category as "pipeline" | "portfolio" | "generic", companyId: companyId ?? undefined, includeInWeekly, editReason: editReason || "General update", editedByUserId: activeUser?.id } }, {
       onSuccess: () => {
         toast.success("Note updated successfully");
         setIsEditing(false);

@@ -196,7 +196,7 @@ export default function NewNotePage() {
                   <FormLabel>Company {isGeneric && <span className="text-muted-foreground font-normal">(Optional)</span>}</FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
-                    defaultValue={field.value || undefined}
+                    value={field.value ?? ""}
                     disabled={isGeneric}
                   >
                     <FormControl>
@@ -224,7 +224,7 @@ export default function NewNotePage() {
                     <FormLabel>Deal Stage</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      value={field.value || undefined}
+                      value={field.value ?? ""}
                     >
                       <FormControl>
                         <SelectTrigger>

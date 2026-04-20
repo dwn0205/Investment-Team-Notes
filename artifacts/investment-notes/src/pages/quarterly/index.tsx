@@ -281,13 +281,13 @@ export default function QuarterlyPage() {
                 )}
 
                 {/* Developments */}
-                {quarterlyView.summary.developments?.length > 0 && (
+                {(quarterlyView.summary.developments?.length ?? 0) > 0 && (
                   <div className="p-5 bg-card border border-card-border rounded-lg space-y-3">
                     <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                       <ArrowUpRight className="h-4 w-4 text-emerald-500" /> Developments
                     </h3>
                     <ul className="space-y-2">
-                      {quarterlyView.summary.developments.map((dev: string, i: number) => (
+                      {quarterlyView.summary.developments?.map((dev: string, i: number) => (
                         <li key={i} className="flex items-start gap-2 text-sm text-foreground">
                           <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" />
                           {dev}
@@ -307,7 +307,7 @@ export default function QuarterlyPage() {
           {/* Notes Table — grouped by category */}
           {quarterlyView.notes.length > 0 && (() => {
             const sorted = [...quarterlyView.notes].sort(
-              (a, b) => new Date(a.noteDate).getTime() - new Date(b.noteDate).getTime()
+              (a, b) => new Date(b.noteDate).getTime() - new Date(a.noteDate).getTime()
             );
             const companyNotes = sorted.filter((n) => n.companyId);
             const genericNotes = sorted.filter((n) => !n.companyId);
