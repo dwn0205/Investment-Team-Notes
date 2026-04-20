@@ -338,7 +338,7 @@ export default function QuarterlyPage() {
                 </div>
                 {expandedNoteId === note.id && (
                   <div className="h-[420px] border-t border-card-border bg-background">
-                    <ExpandedNoteView note={note} onCollapse={() => setExpandedNoteId(null)} />
+                    <ExpandedNoteView note={note} onCollapse={() => setExpandedNoteId(null)} showKeyRisks />
                   </div>
                 )}
               </div>

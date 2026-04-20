@@ -18,7 +18,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger, Drawer
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, onCollapse: () => void }) {
+export function ExpandedNoteView({ note, onCollapse, showKeyRisks = false }: { note: NoteWithDetails, onCollapse: () => void, showKeyRisks?: boolean }) {
   const [isEditing, setIsEditing] = useState(false);
   const [content, setContent] = useState(note.content);
   const [editReason, setEditReason] = useState("");
@@ -292,6 +292,25 @@ export function ExpandedNoteView({ note, onCollapse }: { note: NoteWithDetails, 
               )}
             </div>
 
+            {showKeyRisks && (() => {
+              const risks: string[] = (aiResult.keyExtraction as any)?.risks ?? [];
+              if (!risks.length) return null;
+              return (
+                <div>
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
+                    <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                    Key Risks
+                  </h4>
+                  <ul className="space-y-1.5">
+                    {risks.map((risk, i) => (
+                      <li key={i} className="text-xs text-foreground bg-amber-50 border border-amber-100 rounded px-2.5 py-1.5 leading-snug">
+                        {risk}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })()}
 
           </div>
         ) : (

@@ -161,7 +161,7 @@ export default function WeeklyPage() {
       </div>
       {expandedNoteId === note.id && (
         <div className="border-t border-card-border bg-background h-[500px]">
-          <ExpandedNoteView note={note} onCollapse={() => setExpandedNoteId(null)} />
+          <ExpandedNoteView note={note} onCollapse={() => setExpandedNoteId(null)} showKeyRisks />
         </div>
       )}
     </div>
