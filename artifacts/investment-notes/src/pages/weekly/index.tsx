@@ -53,23 +53,21 @@ export default function WeeklyPage() {
     const noteCount = filteredNotes.length;
     const companyCount = new Set(filteredNotes.map((n) => n.companyId).filter(Boolean)).size;
 
-    const sentimentCounts = { positive: 0, neutral: 0, negative: 0 };
     let totalRisks = 0;
+    const scores: number[] = [];
 
     for (const note of filteredNotes) {
-      const s = note.aiResult?.sentiment;
-      if (s === "positive" || s === "neutral" || s === "negative") sentimentCounts[s]++;
       totalRisks += (note.aiResult?.keyExtraction as any)?.risks?.length ?? 0;
+      if (note.aiResult?.sentimentScore != null) scores.push(note.aiResult.sentimentScore);
     }
 
-    const max = Math.max(...Object.values(sentimentCounts));
-    const dominant = Object.entries(sentimentCounts).filter(([, v]) => v === max);
+    const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
     const sentimentLabel =
-      dominant.length > 1 || max === 0
-        ? "Mixed"
-        : dominant[0][0].charAt(0).toUpperCase() + dominant[0][0].slice(1);
+      avgScore == null ? "Mixed" :
+      avgScore > 0.15 ? "Positive" :
+      avgScore < -0.15 ? "Negative" : "Neutral";
 
-    return { noteCount, companyCount, totalRisks, sentimentLabel, sentimentCounts };
+    return { noteCount, companyCount, totalRisks, sentimentLabel, avgScore };
   }, [filteredNotes]);
 
   // Collect top risks with company attribution, deduplicated — sorted most negative first
@@ -278,13 +276,20 @@ export default function WeeklyPage() {
               "text-muted-foreground"
             }`} />
             <div>
-              <p className="text-xs text-muted-foreground leading-none mb-1">Sentiment</p>
+              <p className="text-xs text-muted-foreground leading-none mb-1">Avg. Sentiment</p>
               <p className={`text-base font-semibold leading-none mt-1 ${
                 stats.sentimentLabel === "Positive" ? "text-green-700" :
                 stats.sentimentLabel === "Negative" ? "text-red-700" :
                 stats.sentimentLabel === "Neutral"  ? "text-yellow-700" :
                 "text-foreground"
-              }`}>{stats.sentimentLabel}</p>
+              }`}>
+                {stats.sentimentLabel}
+                {stats.avgScore != null && (
+                  <span className="ml-2 text-xs font-normal opacity-70">
+                    {stats.avgScore >= 0 ? "+" : ""}{stats.avgScore.toFixed(2)}
+                  </span>
+                )}
+              </p>
             </div>
           </div>
           <div className="bg-card border border-card-border rounded-lg px-4 py-3 flex items-center gap-3">
