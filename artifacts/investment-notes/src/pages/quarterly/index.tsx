@@ -19,19 +19,19 @@ function sentimentToDirection(sentiment?: string | null): "improving" | "stable"
 
 const DIRECTION_CONFIG = {
   improving: {
-    label: "Improving",
+    label: "Positive",
     icon: TrendingUp,
     classes: "bg-green-50 border-green-200 text-green-800",
     iconClass: "text-green-600",
   },
   stable: {
-    label: "Stable",
+    label: "Neutral",
     icon: Minus,
-    classes: "bg-gray-50 border-gray-200 text-gray-700",
-    iconClass: "text-gray-500",
+    classes: "bg-yellow-50 border-yellow-200 text-yellow-800",
+    iconClass: "text-yellow-600",
   },
   deteriorating: {
-    label: "Deteriorating",
+    label: "Negative",
     icon: TrendingDown,
     classes: "bg-red-50 border-red-200 text-red-800",
     iconClass: "text-red-600",
@@ -224,7 +224,7 @@ export default function QuarterlyPage() {
               <div className={`flex items-center gap-3 px-5 py-4 rounded-lg border ${dirConfig.classes}`}>
                 <DirIcon className={`h-5 w-5 shrink-0 ${dirConfig.iconClass}`} />
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wider opacity-70 mb-0.5">Performance Direction</p>
+                  <p className="text-xs font-medium uppercase tracking-wider opacity-70 mb-0.5">Overall Sentiment</p>
                   <p className="text-base font-semibold">{dirConfig.label}</p>
                 </div>
               </div>
