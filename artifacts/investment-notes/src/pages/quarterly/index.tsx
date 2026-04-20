@@ -312,8 +312,8 @@ export default function QuarterlyPage() {
             const companyNotes = sorted.filter((n) => n.companyId);
             const genericNotes = sorted.filter((n) => !n.companyId);
 
-            const NoteRow = ({ note }: { note: typeof sorted[0] }) => (
-              <div className="flex flex-col">
+            const renderNoteRow = (note: typeof sorted[0]) => (
+              <div key={note.id} className="flex flex-col">
                 <div
                   className={`px-5 py-4 hover:bg-muted/40 cursor-pointer transition-colors ${expandedNoteId === note.id ? "bg-muted/40" : ""}`}
                   onClick={() => setExpandedNoteId(expandedNoteId === note.id ? null : note.id)}
@@ -381,7 +381,7 @@ export default function QuarterlyPage() {
                         </button>
                         {companyNotesOpen && (
                           <div className="divide-y divide-border">
-                            {companyNotes.map((note) => <NoteRow key={note.id} note={note} />)}
+                            {companyNotes.map((note) => renderNoteRow(note))}
                           </div>
                         )}
                       </div>
@@ -405,7 +405,7 @@ export default function QuarterlyPage() {
                         </button>
                         {genericNotesOpen && (
                           <div className="divide-y divide-border">
-                            {genericNotes.map((note) => <NoteRow key={note.id} note={note} />)}
+                            {genericNotes.map((note) => renderNoteRow(note))}
                           </div>
                         )}
                       </div>
